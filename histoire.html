@@ -6,35 +6,60 @@
     <title>Start Page</title>
     <style>
         body {
-            background-color: #121212;
-            color: white;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #121212, #2c2c2c);
+            color: #f0f0f0;
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
             flex-direction: column;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 30px;
+            color: #ff4081;
+            text-shadow: 0 0 20px rgba(255, 64, 129, 0.5);
         }
         .start-button {
-            background-color: #6200ea;
+            background: linear-gradient(45deg, #6200ea, #ff4081);
             color: white;
-            border: none;
-            padding: 15px 30px;
+            border: 2px solid #ff4081;
+            padding: 20px 40px;
             font-size: 20px;
             cursor: pointer;
-            border-radius: 10px;
-            transition: background-color 0.3s;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease-in-out;
+            font-weight: bold;
         }
         .start-button:hover {
-            background-color: #3700b3;
+            background: linear-gradient(45deg, #3700b3, #ff1d58);
+            transform: scale(1.05);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.6);
         }
         .start-button:focus {
             outline: none;
         }
+        .glow {
+            animation: glow 1.5s infinite alternate;
+        }
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 20px rgba(255, 64, 129, 0.5);
+            }
+            100% {
+                text-shadow: 0 0 50px rgba(255, 64, 129, 1);
+            }
+        }
     </style>
 </head>
 <body>
+    <h1 class="glow">Welcome to the Future</h1>
     <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/jeu.html'">Commencer</button>
 </body>
 </html>
