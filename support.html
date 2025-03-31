@@ -192,7 +192,7 @@
         
         <div class="password-section">
             <div class="form-group">
-                <label for="password">Mot de passe (trouvé dans hitherebro.txt)</label>
+                <label for="password">Mot de passe (trouvé dans hitherebro.txt - 4ème ligne)</label>
                 <input type="password" id="password" placeholder="Entrez le mot de passe...">
             </div>
             <button id="verify-btn">Vérifier</button>
@@ -221,17 +221,48 @@
             const messageInput = document.getElementById('message');
             const statusMessage = document.getElementById('status-message');
             
-            // In a real implementation, you would fetch this from hitherebro.txt
-            // For this example, we'll simulate the fourth password
-            const CORRECT_PASSWORD = "password4"; // This should be the 4th entry in hitherebro.txt
+            let correctPassword = null;
+            
+            // Fetch the password file
+            fetch('hitherebro.txt')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Fichier de mot de passe non trouvé');
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    const lines = text.split('\n').filter(line => line.trim() !== '');
+                    if (lines.length >= 4) {
+                        // Extract the password from the 4th line (index 3)
+                        const fourthLine = lines[3];
+                        // Remove any numbering (like "4.") and trim whitespace
+                        correctPassword = fourthLine.replace(/^\d+\.\s*/, '').trim();
+                        console.log("Correct password loaded:", correctPassword);
+                    } else {
+                        throw new Error('Format de fichier invalide');
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur de chargement du mot de passe:", error);
+                    showStatus("Erreur de chargement du système de mot de passe. Veuillez réessayer plus tard.", 'error');
+                    verifyBtn.disabled = true;
+                });
             
             verifyBtn.addEventListener('click', function() {
-                if (passwordInput.value === CORRECT_PASSWORD) {
+                if (!correctPassword) {
+                    showStatus("Système de mot de passe non chargé. Veuillez rafraîchir la page.", 'error');
+                    return;
+                }
+                
+                if (passwordInput.value.trim() === correctPassword) {
                     passwordSection.style.display = 'none';
                     messageSection.style.display = 'block';
                     showStatus("Mot de passe correct. Vous pouvez maintenant envoyer votre message.", 'success');
                 } else {
                     showStatus("Mot de passe incorrect. Veuillez réessayer.", 'error');
+                    passwordInput.value = '';
+                    passwordInput.focus();
                 }
             });
             
@@ -246,46 +277,38 @@
                 sendBtn.disabled = true;
                 sendBtn.textContent = "Envoi en cours...";
                 
-                // Simulate sending to Discord webhook
-                setTimeout(() => {
-                    // In a real implementation, you would use fetch() to send to the webhook
-                    // For security reasons, this should be done through a backend service
-                    console.log("Message to send to Discord:", message);
-                    
-                    // This is just a simulation - in production you would actually call the webhook:
-                    /*
-                    fetch('https://discord.com/api/webhooks/1356323798600646746/ruunLS1txFoW2M3ByvItyVSPRLDVK2YnfrDPmkFC_oN0UTULiGMs8pysaPsPhbAYOgwR', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            content: `Nouveau message de support:\n\n${message}`
-                        }),
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            showStatus("Message envoyé avec succès! Nous vous contacterons bientôt.", 'success');
-                            messageInput.value = '';
-                        } else {
-                            throw new Error('Erreur réseau');
-                        }
-                    })
-                    .catch(error => {
-                        showStatus("Erreur lors de l'envoi du message. Veuillez réessayer plus tard.", 'error');
-                    })
-                    .finally(() => {
-                        sendBtn.disabled = false;
-                        sendBtn.textContent = "Envoyer";
-                    });
-                    */
-                    
-                    // For demo purposes, we'll just show a success message
-                    showStatus("Message envoyé avec succès! Nous vous contacterons bientôt.", 'success');
-                    messageInput.value = '';
+                // Webhook URL (in a real app, this should be handled server-side)
+                const webhookURL = 'https://discord.com/api/webhooks/1356323798600646746/ruunLS1txFoW2M3ByvItyVSPRLDVK2YnfrDPmkFC_oN0UTULiGMs8pysaPsPhbAYOgwR';
+                
+                // Create payload
+                const payload = {
+                    content: `Nouveau message de support:\n\n${message}`
+                };
+                
+                // Send to Discord webhook
+                fetch(webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showStatus("Message envoyé avec succès! Nous vous contacterons bientôt.", 'success');
+                        messageInput.value = '';
+                    } else {
+                        throw new Error('Erreur réseau');
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur d'envoi:", error);
+                    showStatus("Erreur lors de l'envoi du message. Veuillez réessayer plus tard.", 'error');
+                })
+                .finally(() => {
                     sendBtn.disabled = false;
                     sendBtn.textContent = "Envoyer";
-                }, 1500);
+                });
             });
             
             function showStatus(text, type) {
