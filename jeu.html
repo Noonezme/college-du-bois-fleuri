@@ -266,106 +266,132 @@
     </div>
 
     <script>
-        // Game data - historical events from 1914 to 2000 (3ème level)
+        // Game data - historical events from 1914 to 2000 (3ème level) with precise dates
         const events = [
             {
                 title: "Assassinat François-Ferdinand",
                 description: "Événement déclencheur de la Première Guerre mondiale.",
+                date: "28 juin 1914",
                 year: 1914
             },
             {
                 title: "Bataille de Verdun",
                 description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
+                date: "21 février - 18 décembre 1916",
                 year: 1916
             },
             {
                 title: "Armistice 1918",
                 description: "Fin des combats de la Première Guerre mondiale.",
+                date: "11 novembre 1918",
                 year: 1918
             },
             {
                 title: "Traité de Versailles",
                 description: "Traité de paix mettant fin officiellement à la guerre.",
+                date: "28 juin 1919",
                 year: 1919
             },
             {
                 title: "Hitler chancelier",
                 description: "Adolf Hitler devient chancelier d'Allemagne.",
+                date: "30 janvier 1933",
                 year: 1933
             },
             {
                 title: "Anschluss",
                 description: "Annexion de l'Autriche par l'Allemagne nazie.",
+                date: "12 mars 1938",
                 year: 1938
             },
             {
                 title: "Pacte germano-soviétique",
                 description: "Accord de non-agression entre Hitler et Staline.",
+                date: "23 août 1939",
                 year: 1939
             },
             {
                 title: "Invasion de la Pologne",
                 description: "Début de la Seconde Guerre mondiale.",
+                date: "1er septembre 1939",
                 year: 1939
+            },
+            {
+                title: "Discours de Pétain",
+                description: "Pétain annonce la demande d'armistice à la radio.",
+                date: "17 juin 1940",
+                year: 1940
             },
             {
                 title: "Appel du 18 Juin",
                 description: "De Gaulle appelle à continuer le combat depuis Londres.",
+                date: "18 juin 1940",
                 year: 1940
             },
             {
                 title: "Armistice 1940",
                 description: "Signature de l'armistice avec l'Allemagne nazie.",
+                date: "22 juin 1940",
                 year: 1940
             },
             {
                 title: "Débarquement Normandie",
                 description: "Opération Overlord pour libérer la France.",
+                date: "6 juin 1944",
                 year: 1944
             },
             {
                 title: "Libération de Paris",
                 description: "Fin de l'occupation allemande de la capitale.",
+                date: "25 août 1944",
                 year: 1944
             },
             {
                 title: "Capitulation allemande",
                 description: "Fin de la Seconde Guerre mondiale en Europe.",
+                date: "8 mai 1945",
                 year: 1945
             },
             {
                 title: "Création de l'ONU",
                 description: "Fondation des Nations unies.",
+                date: "26 juin 1945",
                 year: 1945
             },
             {
                 title: "Plan Marshall",
                 description: "Aide américaine pour la reconstruction.",
+                date: "5 juin 1947",
                 year: 1947
             },
             {
                 title: "Création de l'OTAN",
                 description: "Alliance militaire occidentale.",
+                date: "4 avril 1949",
                 year: 1949
             },
             {
                 title: "Traité de Rome",
                 description: "Fondation de la CEE (future UE).",
+                date: "25 mars 1957",
                 year: 1957
             },
             {
                 title: "Mai 68",
                 description: "Mouvement de protestation en France.",
+                date: "Mai-juin 1968",
                 year: 1968
             },
             {
                 title: "Chute du mur de Berlin",
                 description: "Événement marquant la fin de la Guerre froide.",
+                date: "9 novembre 1989",
                 year: 1989
             },
             {
                 title: "Traité de Maastricht",
                 description: "Fondation de l'Union européenne.",
+                date: "7 février 1992",
                 year: 1992
             }
         ];
@@ -457,7 +483,7 @@
             card.className = 'card';
             
             // Only show date if specified or if it's on the timeline
-            const dateDisplay = cardData.showDate ? cardData.year : '????';
+            const dateDisplay = cardData.showDate ? cardData.date : '????';
             
             card.innerHTML = `
                 <h3>${cardData.title}</h3>
@@ -555,7 +581,7 @@
                     playerCards.push(newPlayerCard);
                 }
                 
-                showMessage(`Correct ! ${newCard.title} (${newCard.year}) est bien placé.`, 'success');
+                showMessage(`Correct ! ${newCard.title} (${newCard.date}) est bien placé.`, 'success');
                 
                 // Check win condition
                 if (playerCards.length === 0 && remainingEvents.length === 0) {
