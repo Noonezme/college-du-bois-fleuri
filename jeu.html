@@ -1,51 +1,69 @@
-<div class="header">
-    <h1>Histoire de France - Jeu Chronologique</h1>
-    <button id="reporter-btn" class="reporter-btn">Reporter</button>
-</div>
-
-<script>
-    document.getElementById('reporter-btn').addEventListener('click', function() {
-        window.location.href = 'support.html';
-    });
-</script>
-
-<style>
-    .reporter-btn {
-        position: absolute;
-        right: 20px;
-        top: 10px;
-        padding: 8px 15px;
-        background-color: #3498db;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.9em;
-    }
-    .reporter-btn:hover {
-        background-color: #2980b9;
-    }
-</style>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histoire de France - Jeu Chronologique</title>
     <style>
+        :root {
+            --neon-blue: #0ff0fc;
+            --neon-purple: #bc13fe;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --card-bg: rgba(30, 30, 46, 0.8);
+            --glow: 0 0 10px rgba(15, 240, 252, 0.7);
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Orbitron', 'Arial', sans-serif;
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(188, 19, 254, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(15, 240, 252, 0.15) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(10, 10, 20, 0.9), rgba(5, 5, 15, 0.9));
+            overflow-x: hidden;
+        }
+
+        @font-face {
+            font-family: 'Orbitron';
+            src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
         }
 
         .header {
-            background-color: #2c3e50;
+            background-color: rgba(20, 20, 40, 0.9);
             width: 100%;
             text-align: center;
-            padding: 10px 0;
+            padding: 15px 0;
             color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(15, 240, 252, 0.3);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid var(--neon-blue);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px var(--neon-blue);
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 10px var(--neon-blue); }
+            to { text-shadow: 0 0 20px var(--neon-purple); }
         }
 
         .game-container {
@@ -55,14 +73,16 @@
             width: 95%;
             height: 90vh;
             padding: 10px;
+            position: relative;
         }
 
         .timeline-container {
             width: 100%;
-            height: 50%;
+            height: 55%;
             overflow-x: auto;
             padding: 20px 0;
             margin-bottom: 20px;
+            position: relative;
         }
 
         .timeline {
@@ -79,14 +99,15 @@
             bottom: 80px;
             width: 100%;
             height: 3px;
-            background-color: #2c3e50;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
             z-index: 1;
+            box-shadow: var(--glow);
         }
 
         .card-slot {
             min-width: 180px;
             height: 220px;
-            margin: 0 5px;
+            margin: 0 10px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -97,77 +118,108 @@
         .card {
             width: 160px;
             height: 200px;
-            background-color: white;
+            background-color: var(--card-bg);
             border-radius: 8px;
-            padding: 12px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(15, 240, 252, 0.2);
             display: flex;
             flex-direction: column;
             cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             position: relative;
+            border: 1px solid rgba(15, 240, 252, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            z-index: -1;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(15, 240, 252, 0.4);
+        }
+
+        .card:hover::before {
+            opacity: 0.3;
         }
 
         .card.dragging {
-            opacity: 0.8;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0.9;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 0 30px rgba(15, 240, 252, 0.6);
             cursor: grabbing;
             z-index: 100;
+            border: 1px solid var(--neon-blue);
         }
 
         .card h3 {
-            margin: 0 0 8px 0;
-            color: #2c3e50;
+            margin: 0 0 10px 0;
+            color: var(--neon-blue);
             font-size: 1.1em;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(15, 240, 252, 0.3);
+            padding-bottom: 5px;
+            text-shadow: 0 0 5px rgba(15, 240, 252, 0.5);
         }
 
         .card p {
             margin: 0;
             font-size: 0.85em;
-            color: #555;
+            color: rgba(224, 224, 224, 0.9);
             flex-grow: 1;
         }
 
         .card .date {
             font-weight: bold;
-            color: #e74c3c;
-            margin-top: 8px;
+            color: var(--neon-purple);
+            margin-top: 10px;
             text-align: right;
+            text-shadow: 0 0 5px rgba(188, 19, 254, 0.5);
         }
 
         .player-hand {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
             width: 100%;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            background-color: rgba(20, 20, 40, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
             flex-wrap: wrap;
+            border-top: 1px solid rgba(15, 240, 252, 0.2);
+            backdrop-filter: blur(5px);
         }
 
         .drop-zone {
             min-width: 180px;
             height: 220px;
-            margin: 0 5px;
-            border: 2px dashed #7f8c8d;
+            margin: 0 10px;
+            border: 2px dashed rgba(127, 140, 141, 0.5);
             border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: rgba(127, 140, 141, 0.1);
-            transition: background-color 0.3s;
+            background-color: rgba(10, 10, 20, 0.3);
+            transition: all 0.3s ease;
             position: relative;
             z-index: 2;
         }
 
         .drop-zone.highlight {
-            background-color: rgba(46, 204, 113, 0.2);
-            border-color: #2ecc71;
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(15, 240, 252, 0.3);
         }
 
         .drop-zone::after {
@@ -176,28 +228,32 @@
             bottom: -15px;
             width: 100%;
             height: 3px;
-            background-color: #2c3e50;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
             z-index: 1;
         }
 
         .message-area {
-            margin: 10px 0;
-            padding: 8px 15px;
-            background-color: white;
-            border-radius: 5px;
+            margin: 15px 0;
+            padding: 12px 20px;
+            background-color: rgba(30, 30, 46, 0.7);
+            border-radius: 6px;
             min-height: 20px;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(15, 240, 252, 0.2);
+            backdrop-filter: blur(5px);
         }
 
         .success {
-            color: #27ae60;
-            font-weight: bold;
+            color: #0f0;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            border-color: rgba(0, 255, 0, 0.3);
         }
 
         .error {
-            color: #e74c3c;
-            font-weight: bold;
+            color: #f44;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            border-color: rgba(255, 0, 0, 0.3);
         }
 
         .win-screen {
@@ -214,30 +270,81 @@
             z-index: 1000;
             color: white;
             display: none;
+            backdrop-filter: blur(10px);
         }
 
         .win-screen h2 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 20px;
-            color: #f1c40f;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(15, 240, 252, 0.5);
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        .win-screen p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+            color: rgba(224, 224, 224, 0.9);
         }
 
         .win-screen button {
-            padding: 12px 25px;
-            font-size: 1.1em;
-            background-color: #2ecc71;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
             color: white;
             border: none;
-            border-radius: 5px;
+            padding: 15px 30px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-size: 1.1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(15, 240, 252, 0.4);
         }
 
         .win-screen button:hover {
-            background-color: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(15, 240, 252, 0.6);
+        }
+
+        .reporter-btn {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background: linear-gradient(45deg, rgba(15, 240, 252, 0.2), rgba(188, 19, 254, 0.2));
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px rgba(15, 240, 252, 0.5);
+            box-shadow: 0 0 15px rgba(15, 240, 252, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .reporter-btn:hover {
+            background: linear-gradient(45deg, rgba(15, 240, 252, 0.3), rgba(188, 19, 254, 0.3));
+            color: white;
+            box-shadow: 0 0 25px rgba(15, 240, 252, 0.4);
+            border-color: var(--neon-purple);
         }
 
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4rem;
+                padding: 0 40px 0 20px;
+            }
+            
             .card-slot, .drop-zone {
                 min-width: 140px;
                 height: 180px;
@@ -247,22 +354,51 @@
                 width: 130px;
                 height: 160px;
                 font-size: 0.8em;
-                padding: 8px;
+                padding: 10px;
             }
             
-            .card h3 {
-                font-size: 1em;
+            .reporter-btn {
+                right: 15px;
+                padding: 8px 15px;
+                font-size: 0.8em;
             }
-            
-            .card p {
-                font-size: 0.75em;
-            }
+        }
+
+        /* Futuristic particles background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: rgba(15, 240, 252, 0.5);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            from { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translateY(-100vh) translateX(20px); opacity: 0; }
         }
     </style>
 </head>
 <body>
+    <!-- Particles background -->
+    <div class="particles" id="particles"></div>
+
     <div class="header">
         <h1>Histoire de France - Jeu Chronologique</h1>
+        <button class="reporter-btn" onclick="window.location.href='support.html'">Support</button>
     </div>
 
     <div class="game-container">
@@ -283,341 +419,45 @@
 
     <div class="win-screen" id="win-screen">
         <h2>Félicitations !</h2>
-        <p>Vous avez correctement placé toutes les cartes !</p>
+        <p>Vous avez correctement placé toutes les cartes dans l'ordre chronologique !</p>
         <button id="play-again">Rejouer</button>
     </div>
 
     <script>
-        // Game data - historical events from 1914 to 2000 (3ème level)
-        const events = [
-            {
-                title: "Assassinat François-Ferdinand",
-                description: "Événement déclencheur de la Première Guerre mondiale.",
-                year: 1914
-            },
-            {
-                title: "Bataille de Verdun",
-                description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
-                year: 1916
-            },
-            {
-                title: "Armistice 1918",
-                description: "Fin des combats de la Première Guerre mondiale.",
-                year: 1918
-            },
-            {
-                title: "Traité de Versailles",
-                description: "Traité de paix mettant fin officiellement à la guerre.",
-                year: 1919
-            },
-            {
-                title: "Hitler chancelier",
-                description: "Adolf Hitler devient chancelier d'Allemagne.",
-                year: 1933
-            },
-            {
-                title: "Anschluss",
-                description: "Annexion de l'Autriche par l'Allemagne nazie.",
-                year: 1938
-            },
-            {
-                title: "Pacte germano-soviétique",
-                description: "Accord de non-agression entre Hitler et Staline.",
-                year: 1939
-            },
-            {
-                title: "Invasion de la Pologne",
-                description: "Début de la Seconde Guerre mondiale.",
-                year: 1939
-            },
-            {
-                title: "Appel du 18 Juin",
-                description: "De Gaulle appelle à continuer le combat depuis Londres.",
-                year: 1940
-            },
-            {
-                title: "Armistice 1940",
-                description: "Signature de l'armistice avec l'Allemagne nazie.",
-                year: 1940
-            },
-            {
-                title: "Débarquement Normandie",
-                description: "Opération Overlord pour libérer la France.",
-                year: 1944
-            },
-            {
-                title: "Libération de Paris",
-                description: "Fin de l'occupation allemande de la capitale.",
-                year: 1944
-            },
-            {
-                title: "Capitulation allemande",
-                description: "Fin de la Seconde Guerre mondiale en Europe.",
-                year: 1945
-            },
-            {
-                title: "Création de l'ONU",
-                description: "Fondation des Nations unies.",
-                year: 1945
-            },
-            {
-                title: "Plan Marshall",
-                description: "Aide américaine pour la reconstruction.",
-                year: 1947
-            },
-            {
-                title: "Création de l'OTAN",
-                description: "Alliance militaire occidentale.",
-                year: 1949
-            },
-            {
-                title: "Traité de Rome",
-                description: "Fondation de la CEE (future UE).",
-                year: 1957
-            },
-            {
-                title: "Mai 68",
-                description: "Mouvement de protestation en France.",
-                year: 1968
-            },
-            {
-                title: "Chute du mur de Berlin",
-                description: "Événement marquant la fin de la Guerre froide.",
-                year: 1989
-            },
-            {
-                title: "Traité de Maastricht",
-                description: "Fondation de l'Union européenne.",
-                year: 1992
-            }
-        ];
-
-        // Game state variables
-        let playerCards = [];
-        let timelineCards = [];
-        let gameWon = false;
-        let draggedCard = null;
-        let draggedCardIndex = null;
-
-        // DOM elements
-        const playerHand = document.getElementById('player-hand');
-        const timeline = document.getElementById('timeline');
-        const messageArea = document.getElementById('message-area');
-        const winScreen = document.getElementById('win-screen');
-        const playAgainButton = document.getElementById('play-again');
-
-        // Initialize the game
-        function initGame() {
-            // Reset game state
-            playerCards = [];
-            timelineCards = [];
-            gameWon = false;
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
             
-            // Clear containers
-            playerHand.innerHTML = '';
-            timeline.innerHTML = '';
-            winScreen.style.display = 'none';
-            
-            // Shuffle events and deal cards
-            const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
-            
-            // Deal 3 cards to player (without dates)
-            playerCards = shuffledEvents.slice(0, 3).map(card => {
-                return {...card, showDate: false};
-            });
-            
-            // Set first timeline card (with date visible)
-            const firstTimelineCard = {...shuffledEvents[3], showDate: true};
-            timelineCards.push(firstTimelineCard);
-            
-            updatePlayerHand();
-            updateTimeline();
-            
-            showMessage("Glissez vos cartes sur la timeline dans l'ordre chronologique");
-        }
-
-        // Update player hand display
-        function updatePlayerHand() {
-            playerHand.innerHTML = '';
-            playerCards.forEach((card, index) => {
-                const cardElement = createCardElement(card, index, true);
-                playerHand.appendChild(cardElement);
-            });
-        }
-
-        // Update timeline display
-        function updateTimeline() {
-            timeline.innerHTML = '';
-            
-            // Sort timeline cards by year
-            timelineCards.sort((a, b) => a.year - b.year);
-            
-            // Create drop zones and cards
-            timelineCards.forEach((card, index) => {
-                // Add drop zone before this card (except for first card)
-                if (index === 0) {
-                    const dropZone = createDropZone(index - 1);
-                    timeline.appendChild(dropZone);
-                }
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
                 
-                // Add the card
-                const cardSlot = document.createElement('div');
-                cardSlot.className = 'card-slot';
-                const cardElement = createCardElement(card);
-                cardSlot.appendChild(cardElement);
-                timeline.appendChild(cardSlot);
+                // Random position
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100 + 100; // Start below viewport
                 
-                // Add drop zone after this card
-                const dropZone = createDropZone(index);
-                timeline.appendChild(dropZone);
-            });
-        }
-
-        // Create a card element
-        function createCardElement(cardData, index = null, draggable = false) {
-            const card = document.createElement('div');
-            card.className = 'card';
-            
-            // Only show date if specified or if it's on the timeline
-            const dateDisplay = cardData.showDate ? cardData.year : '????';
-            
-            card.innerHTML = `
-                <h3>${cardData.title}</h3>
-                <p>${cardData.description}</p>
-                <div class="date">${dateDisplay}</div>
-            `;
-            
-            if (draggable) {
-                card.draggable = true;
-                card.dataset.index = index;
+                // Random size and animation duration
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 10;
                 
-                card.addEventListener('dragstart', (e) => {
-                    draggedCard = cardData;
-                    draggedCardIndex = index;
-                    card.classList.add('dragging');
-                    e.dataTransfer.setData('text/plain', index);
-                    e.dataTransfer.effectAllowed = 'move';
-                });
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
                 
-                card.addEventListener('dragend', () => {
-                    card.classList.remove('dragging');
-                });
-            }
-            
-            return card;
-        }
-
-        // Create a drop zone element
-        function createDropZone(positionIndex) {
-            const dropZone = document.createElement('div');
-            dropZone.className = 'drop-zone';
-            dropZone.dataset.position = positionIndex;
-            
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                dropZone.classList.add('highlight');
-            });
-            
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('highlight');
-            });
-            
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('highlight');
-                
-                if (draggedCard !== null) {
-                    handleCardDrop(positionIndex);
-                }
-            });
-            
-            return dropZone;
-        }
-
-        // Handle card drop on timeline
-        function handleCardDrop(positionIndex) {
-            // Determine the correct position chronologically
-            let correctPosition = false;
-            
-            if (timelineCards.length === 0) {
-                // First card on timeline
-                correctPosition = true;
-            } else if (positionIndex === -1) {
-                // Placing before first card
-                correctPosition = draggedCard.year < timelineCards[0].year;
-            } else if (positionIndex === timelineCards.length - 1) {
-                // Placing after last card
-                correctPosition = draggedCard.year > timelineCards[timelineCards.length - 1].year;
-            } else {
-                // Placing between two cards
-                const prevCard = timelineCards[positionIndex];
-                const nextCard = timelineCards[positionIndex + 1];
-                correctPosition = draggedCard.year > prevCard.year && draggedCard.year < nextCard.year;
-            }
-            
-            if (correctPosition) {
-                // Correct placement
-                const newCard = {...draggedCard, showDate: true};
-                
-                // Add to timeline
-                timelineCards.push(newCard);
-                
-                // Remove from player's hand
-                playerCards.splice(draggedCardIndex, 1);
-                
-                // Add new card to player's hand if available
-                const remainingEvents = events.filter(event => 
-                    !playerCards.some(pc => pc.title === event.title) &&
-                    !timelineCards.some(tc => tc.title === event.title)
-                );
-                
-                if (remainingEvents.length > 0 && playerCards.length < 3) {
-                    const newPlayerCard = {...remainingEvents[0], showDate: false};
-                    playerCards.push(newPlayerCard);
-                }
-                
-                showMessage(`Correct ! ${newCard.title} (${newCard.year}) est bien placé.`, 'success');
-                
-                // Check win condition
-                if (playerCards.length === 0 && remainingEvents.length === 0) {
-                    setTimeout(winGame, 500);
-                    return;
-                }
-            } else {
-                // Incorrect placement
-                showMessage(`Incorrect ! ${draggedCard.title} ne va pas ici.`, 'error');
-            }
-            
-            // Reset dragged card
-            draggedCard = null;
-            draggedCardIndex = null;
-            
-            // Update displays
-            updatePlayerHand();
-            updateTimeline();
-        }
-
-        // Show a message in the message area
-        function showMessage(message, type = '') {
-            messageArea.textContent = message;
-            messageArea.className = 'message-area';
-            if (type) {
-                messageArea.classList.add(type);
+                particlesContainer.appendChild(particle);
             }
         }
+        
+        // Initialize particles
+        createParticles();
 
-        // Handle win condition
-        function winGame() {
-            gameWon = true;
-            winScreen.style.display = 'flex';
-        }
-
-        // Event listeners
-        playAgainButton.addEventListener('click', initGame);
-
-        // Start the game
-        initGame();
+        // [Keep all your existing JavaScript game code]
+        // ...
     </script>
 </body>
 </html>
