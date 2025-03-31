@@ -155,6 +155,13 @@
             border-color: rgba(0, 219, 222, 0.8);
         }
 
+        .drop-indicator.between {
+            width: 40px;
+            height: 40px;
+            margin: 0 -20px; /* Half overlaps adjacent cards */
+            z-index: 10;
+        }
+
         .message {
             position: fixed;
             bottom: 2rem;
@@ -286,6 +293,12 @@
             
             h1 {
                 font-size: 1.8rem;
+            }
+            
+            .drop-indicator.between {
+                width: 30px;
+                height: 30px;
+                margin: 0 -15px;
             }
         }
     </style>
@@ -545,10 +558,20 @@
             firstDropIndicator.addEventListener('drop', () => handleCardDrop(-1));
             timeline.appendChild(firstDropIndicator);
             
-            // Add timeline cards
-            timelineCards.forEach(card => {
+            // Add timeline cards with between drop indicators
+            timelineCards.forEach((card, index) => {
                 const cardElement = createCardElement(card);
                 timeline.appendChild(cardElement);
+                
+                // Add between drop indicator (except after last card)
+                if (index < timelineCards.length - 1) {
+                    const betweenDropIndicator = document.createElement('div');
+                    betweenDropIndicator.className = 'drop-indicator between';
+                    betweenDropIndicator.textContent = '+';
+                    betweenDropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+                    betweenDropIndicator.addEventListener('drop', () => handleCardDrop(index));
+                    timeline.appendChild(betweenDropIndicator);
+                }
             });
             
             // Add drop indicator at the end
@@ -587,188 +610,4 @@
             cardElement.appendChild(dateElement);
             
             // Drag events
-            cardElement.addEventListener('dragstart', (e) => {
-                if (index !== null) { // Only allow dragging from player's hand
-                    draggedCard = card;
-                    draggedCardIndex = index;
-                    cardElement.classList.add('dragging');
-                    e.dataTransfer.setData('text/plain', card.title);
-                }
-            });
-            
-            cardElement.addEventListener('dragend', () => {
-                cardElement.classList.remove('dragging');
-            });
-            
-            return cardElement;
-        }
-
-        // Handle card drop on timeline - UPDATED with new placement rules
-        function handleCardDrop(positionIndex) {
-            if (draggedCard === null) return;
-            
-            // Get current min and max values on timeline
-            const currentValues = timelineCards.map(card => card.value);
-            const currentMin = Math.min(...currentValues);
-            const currentMax = Math.max(...currentValues);
-            
-            // Check placement rules
-            let validPlacement = false;
-            
-            if (positionIndex === -1) { // Placing before first card
-                validPlacement = (draggedCard.value < currentMin);
-            } 
-            else if (positionIndex === timelineCards.length - 1) { // Placing after last card
-                validPlacement = (draggedCard.value > currentMax);
-            }
-            else {
-                // Not allowed to place between cards under these rules
-                showMessage("Vous ne pouvez placer des cartes qu'aux extrémités de la timeline", 'error');
-                return;
-            }
-            
-            if (validPlacement) {
-                // Correct placement
-                const newCard = {
-                    ...draggedCard, 
-                    showDate: true
-                };
-                
-                // Add to timeline
-                timelineCards.push(newCard);
-                
-                // Remove from player's hand
-                playerCards.splice(draggedCardIndex, 1);
-                
-                // Add new card to player's hand if available
-                const remainingEvents = events.filter(event => 
-                    !playerCards.some(pc => pc.title === event.title) &&
-                    !timelineCards.some(tc => tc.title === event.title)
-                );
-                
-                if (remainingEvents.length > 0 && playerCards.length < 3) {
-                    const newPlayerCard = {...remainingEvents[0], showDate: false};
-                    playerCards.push(newPlayerCard);
-                }
-                
-                showMessage(`Correct ! ${newCard.title} (${newCard.date}) est bien placé.`, 'success');
-                
-                // Check win condition
-                checkWinCondition();
-            } else {
-                // Incorrect placement
-                showMessage(`Incorrect ! ${draggedCard.title} ne peut être placé ici.`, 'error');
-            }
-            
-            // Reset dragged card
-            draggedCard = null;
-            draggedCardIndex = null;
-            
-            // Update displays
-            updatePlayerHand();
-            updateTimeline();
-        }
-
-        // Check win condition
-        function checkWinCondition() {
-            const remainingEvents = events.filter(event => 
-                !playerCards.some(pc => pc.title === event.title) &&
-                !timelineCards.some(tc => tc.title === event.title)
-            );
-            
-            if (playerCards.length === 0 && remainingEvents.length === 0) {
-                // Verify all cards are in correct order
-                const sortedTimeline = [...timelineCards].sort((a, b) => a.value - b.value);
-                const isCorrectOrder = timelineCards.every((card, index) => 
-                    card.value === sortedTimeline[index].value);
-                
-                if (isCorrectOrder) {
-                    setTimeout(winGame, 500);
-                } else {
-                    showMessage("Toutes les cartes sont placées mais l'ordre n'est pas correct !", 'error');
-                }
-            }
-        }
-
-        // Show win screen
-        function winGame() {
-            gameWon = true;
-            winScreen.classList.add('show');
-        }
-
-        // Show message
-        function showMessage(text, type = 'info') {
-            message.textContent = text;
-            message.className = 'message ' + type;
-            message.classList.add('show');
-            
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 3000);
-        }
-
-        // Create particles
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                
-                // Random position
-                const x = Math.random() * 100;
-                const y = Math.random() * 100;
-                
-                // Random size
-                const size = Math.random() * 3 + 1;
-                
-                // Random animation
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 5;
-                
-                particle.style.left = `${x}%`;
-                particle.style.top = `${y}%`;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
-                
-                particlesContainer.appendChild(particle);
-            }
-        }
-
-        // Add animation keyframes
-        function addAnimationStyles() {
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes float {
-                    0%, 100% {
-                        transform: translate(0, 0);
-                    }
-                    25% {
-                        transform: translate(10px, 10px);
-                    }
-                    50% {
-                        transform: translate(5px, -5px);
-                    }
-                    75% {
-                        transform: translate(-5px, 5px);
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        // Event listeners
-        restartBtn.addEventListener('click', initGame);
-        supportBtn.addEventListener('click', () => {
-            window.location.href = 'support.html';
-        });
-
-        // Initialize
-        addAnimationStyles();
-        createParticles();
-        initGame();
-    </script>
-</body>
-</html>
+            cardElement.addEventListener('dragstart', 
