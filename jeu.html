@@ -266,133 +266,154 @@
     </div>
 
     <script>
-        // Game data - historical events from 1914 to 2000 (3ème level) with precise dates
+        // Game data with precise dates and placement values between 1.0000 and 10.0000
         const events = [
             {
                 title: "Assassinat François-Ferdinand",
                 description: "Événement déclencheur de la Première Guerre mondiale.",
                 date: "28 juin 1914",
-                year: 1914
+                year: 1914,
+                placementValue: 1.0000
             },
             {
                 title: "Bataille de Verdun",
                 description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
                 date: "21 février - 18 décembre 1916",
-                year: 1916
+                year: 1916,
+                placementValue: 2.0000
             },
             {
                 title: "Armistice 1918",
                 description: "Fin des combats de la Première Guerre mondiale.",
                 date: "11 novembre 1918",
-                year: 1918
+                year: 1918,
+                placementValue: 3.0000
             },
             {
                 title: "Traité de Versailles",
                 description: "Traité de paix mettant fin officiellement à la guerre.",
                 date: "28 juin 1919",
-                year: 1919
+                year: 1919,
+                placementValue: 4.0000
             },
             {
                 title: "Hitler chancelier",
                 description: "Adolf Hitler devient chancelier d'Allemagne.",
                 date: "30 janvier 1933",
-                year: 1933
+                year: 1933,
+                placementValue: 5.0000
             },
             {
                 title: "Anschluss",
                 description: "Annexion de l'Autriche par l'Allemagne nazie.",
                 date: "12 mars 1938",
-                year: 1938
+                year: 1938,
+                placementValue: 6.0000
             },
             {
                 title: "Pacte germano-soviétique",
                 description: "Accord de non-agression entre Hitler et Staline.",
                 date: "23 août 1939",
-                year: 1939
+                year: 1939,
+                placementValue: 7.0000
             },
             {
                 title: "Invasion de la Pologne",
                 description: "Début de la Seconde Guerre mondiale.",
                 date: "1er septembre 1939",
-                year: 1939
+                year: 1939,
+                placementValue: 7.1000
             },
             {
                 title: "Discours de Pétain",
                 description: "Pétain annonce la demande d'armistice à la radio.",
                 date: "17 juin 1940",
-                year: 1940
+                year: 1940,
+                placementValue: 8.0000
             },
             {
                 title: "Appel du 18 Juin",
                 description: "De Gaulle appelle à continuer le combat depuis Londres.",
                 date: "18 juin 1940",
-                year: 1940
+                year: 1940,
+                placementValue: 8.1000
             },
             {
                 title: "Armistice 1940",
                 description: "Signature de l'armistice avec l'Allemagne nazie.",
                 date: "22 juin 1940",
-                year: 1940
+                year: 1940,
+                placementValue: 8.2000
             },
             {
                 title: "Débarquement Normandie",
                 description: "Opération Overlord pour libérer la France.",
                 date: "6 juin 1944",
-                year: 1944
+                year: 1944,
+                placementValue: 9.0000
             },
             {
                 title: "Libération de Paris",
                 description: "Fin de l'occupation allemande de la capitale.",
                 date: "25 août 1944",
-                year: 1944
+                year: 1944,
+                placementValue: 9.1000
             },
             {
                 title: "Capitulation allemande",
                 description: "Fin de la Seconde Guerre mondiale en Europe.",
                 date: "8 mai 1945",
-                year: 1945
+                year: 1945,
+                placementValue: 9.2000
             },
             {
                 title: "Création de l'ONU",
                 description: "Fondation des Nations unies.",
                 date: "26 juin 1945",
-                year: 1945
+                year: 1945,
+                placementValue: 9.3000
             },
             {
                 title: "Plan Marshall",
                 description: "Aide américaine pour la reconstruction.",
                 date: "5 juin 1947",
-                year: 1947
+                year: 1947,
+                placementValue: 9.4000
             },
             {
                 title: "Création de l'OTAN",
                 description: "Alliance militaire occidentale.",
                 date: "4 avril 1949",
-                year: 1949
+                year: 1949,
+                placementValue: 9.5000
             },
             {
                 title: "Traité de Rome",
                 description: "Fondation de la CEE (future UE).",
                 date: "25 mars 1957",
-                year: 1957
+                year: 1957,
+                placementValue: 9.6000
             },
             {
                 title: "Mai 68",
                 description: "Mouvement de protestation en France.",
                 date: "Mai-juin 1968",
-                year: 1968
+                year: 1968,
+                placementValue: 9.7000
             },
             {
                 title: "Chute du mur de Berlin",
                 description: "Événement marquant la fin de la Guerre froide.",
                 date: "9 novembre 1989",
-                year: 1989
+                year: 1989,
+                placementValue: 9.8000
             },
             {
                 title: "Traité de Maastricht",
                 description: "Fondation de l'Union européenne.",
                 date: "7 février 1992",
-                year: 1992
+                year: 1992,
+                placementValue: 9.9000
             }
         ];
 
@@ -453,8 +474,8 @@
         function updateTimeline() {
             timeline.innerHTML = '';
             
-            // Sort timeline cards by year
-            timelineCards.sort((a, b) => a.year - b.year);
+            // Sort timeline cards by placement value
+            timelineCards.sort((a, b) => a.placementValue - b.placementValue);
             
             // Create drop zones and cards
             timelineCards.forEach((card, index) => {
@@ -541,28 +562,38 @@
 
         // Handle card drop on timeline
         function handleCardDrop(positionIndex) {
-            // Determine the correct position chronologically
+            // Determine the correct position based on placementValue
             let correctPosition = false;
+            let newPlacementValue = 0;
             
             if (timelineCards.length === 0) {
                 // First card on timeline
                 correctPosition = true;
+                newPlacementValue = draggedCard.placementValue;
             } else if (positionIndex === -1) {
                 // Placing before first card
-                correctPosition = draggedCard.year < timelineCards[0].year;
+                correctPosition = draggedCard.placementValue < timelineCards[0].placementValue;
+                newPlacementValue = timelineCards[0].placementValue - 0.1;
             } else if (positionIndex === timelineCards.length - 1) {
                 // Placing after last card
-                correctPosition = draggedCard.year > timelineCards[timelineCards.length - 1].year;
+                correctPosition = draggedCard.placementValue > timelineCards[timelineCards.length - 1].placementValue;
+                newPlacementValue = timelineCards[timelineCards.length - 1].placementValue + 0.1;
             } else {
                 // Placing between two cards
                 const prevCard = timelineCards[positionIndex];
                 const nextCard = timelineCards[positionIndex + 1];
-                correctPosition = draggedCard.year > prevCard.year && draggedCard.year < nextCard.year;
+                correctPosition = (draggedCard.placementValue > prevCard.placementValue && 
+                                  draggedCard.placementValue < nextCard.placementValue);
+                newPlacementValue = (prevCard.placementValue + nextCard.placementValue) / 2;
             }
             
             if (correctPosition) {
                 // Correct placement
-                const newCard = {...draggedCard, showDate: true};
+                const newCard = {
+                    ...draggedCard, 
+                    showDate: true,
+                    placementValue: newPlacementValue
+                };
                 
                 // Add to timeline
                 timelineCards.push(newCard);
