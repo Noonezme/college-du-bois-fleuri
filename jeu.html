@@ -5,88 +5,292 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histoire de France - Jeu Chronologique</title>
     <style>
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff00f0;
+            --dark: #0a0a1a;
+            --darker: #050510;
+            --card-bg: rgba(20, 20, 40, 0.7);
+            --timeline-bg: rgba(10, 10, 30, 0.5);
+        }
+        
+        @font-face {
+            font-family: 'Cyber';
+            src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            font-family: 'Orbitron', sans-serif;
+            background: radial-gradient(ellipse at center, var(--darker) 0%, var(--dark) 100%);
             color: #e6e6e6;
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            overflow-x: hidden;
+            background-attachment: fixed;
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 10px var(--primary), 
+                         0 0 20px var(--primary),
+                         0 0 30px rgba(0, 240, 255, 0.5);
         }
         
         .game-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+            position: relative;
+        }
+        
+        h1::after {
+            content: '';
+            display: block;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            margin: 10px auto 0;
+            border-radius: 50%;
+            filter: blur(1px);
         }
         
         .timeline {
             display: flex;
-            gap: 10px;
-            padding: 1rem;
+            gap: 15px;
+            padding: 2rem;
             overflow-x: auto;
-            min-height: 200px;
+            min-height: 250px;
             align-items: center;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
+            background: var(--timeline-bg);
+            border-radius: 15px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1),
+                        inset 0 0 20px rgba(0, 240, 255, 0.05);
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                          transparent 0%, 
+                          var(--primary) 50%, 
+                          transparent 100%);
+            animation: scanline 8s linear infinite;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
         }
         
         .card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            min-width: 180px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 1.5rem;
+            min-width: 200px;
             cursor: grab;
-            border: 1px solid rgba(0,219,222,0.3);
-            transition: all 0.3s;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(0, 240, 255, 0.1) 0%,
+                rgba(255, 0, 240, 0.1) 100%
+            );
+            transform: rotate(45deg);
+            z-index: -1;
         }
         
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 240, 255, 0.3),
+                        inset 0 0 10px rgba(0, 240, 255, 0.2);
+            border-color: var(--primary);
+        }
+        
+        .card.dragging {
+            opacity: 0.8;
+            transform: scale(1.1) rotate(2deg);
+            box-shadow: 0 0 30px var(--primary);
+        }
+        
+        .card h3 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        .card p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .card small {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            font-weight: bold;
         }
         
         .drop-zone {
-            min-width: 50px;
-            height: 100px;
-            border: 2px dashed rgba(0,219,222,0.5);
-            border-radius: 8px;
+            min-width: 60px;
+            height: 120px;
+            border: 2px dashed rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(0, 240, 255, 0.5);
+            font-size: 1.5rem;
+            position: relative;
+        }
+        
+        .drop-zone::before {
+            content: '+';
+            position: absolute;
         }
         
         .drop-zone.active {
-            background: rgba(0,219,222,0.1);
+            background: rgba(0, 240, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+            color: var(--primary);
         }
         
         .player-hand {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 2rem 0;
+            padding: 2rem;
+            background: var(--timeline-bg);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 0, 240, 0.2);
+            box-shadow: 0 0 30px rgba(255, 0, 240, 0.1),
+                        inset 0 0 20px rgba(255, 0, 240, 0.05);
+            margin-bottom: 2rem;
         }
         
         .message {
-            padding: 1rem;
+            padding: 1.5rem;
             margin: 1rem 0;
-            border-radius: 4px;
+            border-radius: 8px;
             text-align: center;
+            font-weight: bold;
+            letter-spacing: 1px;
+            border: 1px solid transparent;
+            backdrop-filter: blur(5px);
+            animation: pulse 2s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
         }
         
         .success {
-            background: rgba(0,200,83,0.2);
-            color: #00c853;
+            background: rgba(0, 200, 83, 0.15);
+            color: #00ff88;
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
         }
         
         .error {
-            background: rgba(255,23,68,0.2);
-            color: #ff1744;
+            background: rgba(255, 23, 68, 0.15);
+            color: #ff0055;
+            border-color: #ff0055;
+            box-shadow: 0 0 20px rgba(255, 0, 85, 0.2);
+        }
+        
+        /* Cyber grid overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 1rem;
+            }
+            
+            .card {
+                min-width: 160px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1>Histoire de France - Jeu Chronologique</h1>
+        <h1 class="neon-text">HISTOIRE DE FRANCE<br>CHRONO-JEU</h1>
         
         <div class="timeline" id="timeline"></div>
         
@@ -96,15 +300,14 @@
     </div>
 
     <script>
-        // Vos événements historiques avec les dates exactes du script
+        // [EXACT SAME GAME MECHANICS AS BEFORE]
+        // Game data with properly ordered historical events (oldest to newest)
         const events = [
             {
                 title: "Assassinat François-Ferdinand",
                 description: "Événement déclencheur de la Première Guerre mondiale.",
                 date: "28 juin 1914",
                 year: 1914,
-                month: 6,
-                day: 28,
                 value: 1
             },
             {
@@ -112,8 +315,6 @@
                 description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
                 date: "21 février - 18 décembre 1916",
                 year: 1916,
-                month: 2,
-                day: 21,
                 value: 2
             },
             {
@@ -121,8 +322,6 @@
                 description: "Fin des combats de la Première Guerre mondiale.",
                 date: "11 novembre 1918",
                 year: 1918,
-                month: 11,
-                day: 11,
                 value: 3
             },
             {
@@ -130,8 +329,6 @@
                 description: "Traité de paix mettant fin officiellement à la guerre.",
                 date: "28 juin 1919",
                 year: 1919,
-                month: 6,
-                day: 28,
                 value: 4
             },
             {
@@ -139,8 +336,6 @@
                 description: "Adolf Hitler devient chancelier d'Allemagne.",
                 date: "30 janvier 1933",
                 year: 1933,
-                month: 1,
-                day: 30,
                 value: 5
             },
             {
@@ -148,8 +343,6 @@
                 description: "Annexion de l'Autriche par l'Allemagne nazie.",
                 date: "12 mars 1938",
                 year: 1938,
-                month: 3,
-                day: 12,
                 value: 6
             },
             {
@@ -157,8 +350,6 @@
                 description: "Accord de non-agression entre Hitler et Staline.",
                 date: "23 août 1939",
                 year: 1939,
-                month: 8,
-                day: 23,
                 value: 7
             },
             {
@@ -166,8 +357,6 @@
                 description: "Début de la Seconde Guerre mondiale.",
                 date: "1er septembre 1939",
                 year: 1939,
-                month: 9,
-                day: 1,
                 value: 8
             },
             {
@@ -175,8 +364,6 @@
                 description: "Pétain annonce la demande d'armistice à la radio.",
                 date: "17 juin 1940",
                 year: 1940,
-                month: 6,
-                day: 17,
                 value: 9
             },
             {
@@ -184,8 +371,6 @@
                 description: "De Gaulle appelle à continuer le combat depuis Londres.",
                 date: "18 juin 1940",
                 year: 1940,
-                month: 6,
-                day: 18,
                 value: 10
             },
             {
@@ -193,8 +378,6 @@
                 description: "Signature de l'armistice avec l'Allemagne nazie.",
                 date: "22 juin 1940",
                 year: 1940,
-                month: 6,
-                day: 22,
                 value: 11
             },
             {
@@ -202,8 +385,6 @@
                 description: "Opération Overlord pour libérer la France.",
                 date: "6 juin 1944",
                 year: 1944,
-                month: 6,
-                day: 6,
                 value: 12
             },
             {
@@ -211,8 +392,6 @@
                 description: "Fin de l'occupation allemande de la capitale.",
                 date: "25 août 1944",
                 year: 1944,
-                month: 8,
-                day: 25,
                 value: 13
             },
             {
@@ -220,8 +399,6 @@
                 description: "Fin de la Seconde Guerre mondiale en Europe.",
                 date: "8 mai 1945",
                 year: 1945,
-                month: 5,
-                day: 8,
                 value: 14
             },
             {
@@ -229,8 +406,6 @@
                 description: "Fondation des Nations unies.",
                 date: "26 juin 1945",
                 year: 1945,
-                month: 6,
-                day: 26,
                 value: 15
             },
             {
@@ -238,8 +413,6 @@
                 description: "Aide américaine pour la reconstruction.",
                 date: "5 juin 1947",
                 year: 1947,
-                month: 6,
-                day: 5,
                 value: 16
             },
             {
@@ -247,8 +420,6 @@
                 description: "Alliance militaire occidentale.",
                 date: "4 avril 1949",
                 year: 1949,
-                month: 4,
-                day: 4,
                 value: 17
             },
             {
@@ -256,8 +427,6 @@
                 description: "Fondation de la CEE (future UE).",
                 date: "25 mars 1957",
                 year: 1957,
-                month: 3,
-                day: 25,
                 value: 18
             },
             {
@@ -265,8 +434,6 @@
                 description: "Mouvement de protestation en France.",
                 date: "Mai-juin 1968",
                 year: 1968,
-                month: 5,
-                day: 1,
                 value: 19
             },
             {
@@ -274,8 +441,6 @@
                 description: "Événement marquant la fin de la Guerre froide.",
                 date: "9 novembre 1989",
                 year: 1989,
-                month: 11,
-                day: 9,
                 value: 20
             },
             {
@@ -283,131 +448,149 @@
                 description: "Fondation de l'Union européenne.",
                 date: "7 février 1992",
                 year: 1992,
-                month: 2,
-                day: 7,
                 value: 21
             }
         ];
 
-        // Initialisation du jeu
+        // Game state variables
+        let playerCards = [];
+        let timelineCards = [];
+        let gameWon = false;
+        let draggedCard = null;
+        let draggedCardIndex = null;
+
+        // Initialize the game
         function initGame() {
-            const shuffled = [...events].sort(() => Math.random() - 0.5);
-            playerCards = shuffled.slice(0, 3);
-            timelineCards = [shuffled[3]];
+            // Reset game state
+            playerCards = [];
+            timelineCards = [];
+            gameWon = false;
             
-            updateDisplay();
-        }
-        
-        function updateDisplay() {
-            timeline.innerHTML = '';
+            // Clear containers
             playerHand.innerHTML = '';
+            timeline.innerHTML = '';
             
-            // Trier par valeur (1=le plus ancien)
-            timelineCards.sort((a, b) => a.value - b.value);
+            // Shuffle events but keep their chronological values
+            const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
             
-            // Ajouter des zones de dépôt avant chaque carte
-            timelineCards.forEach((card, index) => {
-                const dropZone = createDropZone(index - 1);
-                timeline.appendChild(dropZone);
-                
-                const cardElement = createCardElement(card);
-                timeline.appendChild(cardElement);
+            // Deal 3 cards to player (without dates)
+            playerCards = shuffledEvents.slice(0, 3).map(card => {
+                return {...card, showDate: false};
             });
             
-            // Ajouter une zone de dépôt finale
-            const finalDropZone = createDropZone(timelineCards.length - 1);
-            timeline.appendChild(finalDropZone);
+            // Set first timeline card (with date visible)
+            const firstTimelineCard = {...shuffledEvents[3], showDate: true};
+            timelineCards.push(firstTimelineCard);
             
-            // Afficher la main du joueur
+            updatePlayerHand();
+            updateTimeline();
+            
+            showMessage("Glissez vos cartes sur la timeline dans l'ordre chronologique");
+            
+            // Create floating particles
+            createParticles();
+        }
+
+        // Update player's hand display
+        function updatePlayerHand() {
+            playerHand.innerHTML = '';
+            
             playerCards.forEach((card, index) => {
-                const cardElement = createCardElement(card, index, true);
+                const cardElement = createCardElement(card, index);
                 playerHand.appendChild(cardElement);
             });
         }
-        
-        function createCardElement(card, index = null, isPlayerCard = false) {
-            const element = document.createElement('div');
-            element.className = 'card';
-            element.innerHTML = `
-                <h3>${card.title}</h3>
-                <p>${card.description}</p>
-                <small>${isPlayerCard ? 'Date cachée' : card.date}</small>
-            `;
+
+        // Update timeline display
+        function updateTimeline() {
+            timeline.innerHTML = '';
             
-            if (isPlayerCard) {
-                element.draggable = true;
-                element.addEventListener('dragstart', () => {
+            // Sort timeline cards by value
+            timelineCards.sort((a, b) => a.value - b.value);
+            
+            // Add drop indicator at the beginning
+            const firstDropIndicator = document.createElement('div');
+            firstDropIndicator.className = 'drop-zone';
+            firstDropIndicator.textContent = '+';
+            firstDropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+            firstDropIndicator.addEventListener('drop', () => handleCardDrop(-1));
+            timeline.appendChild(firstDropIndicator);
+            
+            // Add timeline cards with between drop indicators
+            timelineCards.forEach((card, index) => {
+                const cardElement = createCardElement(card);
+                timeline.appendChild(cardElement);
+                
+                // Add drop indicator after each card
+                const dropIndicator = document.createElement('div');
+                dropIndicator.className = 'drop-zone';
+                dropIndicator.textContent = '+';
+                dropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+                dropIndicator.addEventListener('drop', () => handleCardDrop(index));
+                timeline.appendChild(dropIndicator);
+            });
+        }
+
+        // Create card element
+        function createCardElement(card, index = null) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.draggable = true;
+            
+            if (index !== null) {
+                cardElement.dataset.index = index;
+            }
+            
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = card.title;
+            
+            const descElement = document.createElement('p');
+            descElement.textContent = card.description;
+            
+            const dateElement = document.createElement('small');
+            dateElement.textContent = card.showDate ? card.date : 'Date cachée';
+            
+            cardElement.appendChild(titleElement);
+            cardElement.appendChild(descElement);
+            cardElement.appendChild(dateElement);
+            
+            // Drag events
+            cardElement.addEventListener('dragstart', (e) => {
+                if (index !== null) { // Only allow dragging from player's hand
                     draggedCard = card;
-                });
-            }
-            
-            return element;
-        }
-        
-        function createDropZone(positionIndex) {
-            const dropZone = document.createElement('div');
-            dropZone.className = 'drop-zone';
-            dropZone.dataset.position = positionIndex;
-            
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('active');
-            });
-            
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('active');
-            });
-            
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('active');
-                handleCardDrop(parseInt(dropZone.dataset.position));
-            });
-            
-            return dropZone;
-        }
-        
-        function handleCardDrop(positionIndex) {
-            if (!draggedCard) return;
-            
-            // Vérifier le placement
-            const prevCard = timelineCards[positionIndex];
-            const nextCard = timelineCards[positionIndex + 1];
-            
-            const isValid = (
-                (!prevCard || draggedCard.value > prevCard.value) && 
-                (!nextCard || draggedCard.value < nextCard.value)
-            );
-            
-            if (isValid) {
-                timelineCards.push(draggedCard);
-                playerCards = playerCards.filter(c => c.title !== draggedCard.title);
-                
-                // Piocher une nouvelle carte si disponible
-                const remaining = events.filter(
-                    e => ![...playerCards, ...timelineCards].some(c => c.title === e.title)
-                );
-                
-                if (remaining.length > 0) {
-                    playerCards.push(remaining[0]);
+                    draggedCardIndex = index;
+                    cardElement.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', card.title);
                 }
-                
-                showMessage("Correct !", "success");
-            } else {
-                showMessage("Incorrect - l'ordre chronologique est faux", "error");
-            }
+            });
             
-            updateDisplay();
+            cardElement.addEventListener('dragend', () => {
+                cardElement.classList.remove('dragging');
+            });
+            
+            return cardElement;
         }
+
+        // Handle card drop on timeline
+        function handleCardDrop(positionIndex) {
+            if (draggedCard === null) return;
+            
+            // Get current min and max values on timeline
+            const currentValues = timelineCards.map(card => card.value);
+            const currentMin = Math.min(...currentValues);
+            const currentMax = Math.max(...currentValues);
+            
+            // Check placement rules
+            let validPlacement = false;
+            
+            if (positionIndex === -1) { // Placing before first card
+                validPlacement = (draggedCard.value < currentMin);
+            } 
+            else if (positionIndex === timelineCards.length - 1) { // Placing after last card
+                validPlacement = (draggedCard.value > currentMax);
+            }
+            else { // Placing between two cards
+                const prevCard = timelineCards[positionIndex];
+                const nextCard = timelineCards[positionIndex + 1];
+                validPlacement = (draggedCard.value > prevCard.value && draggedCard.value < nextCard.value);
         
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = `message ${type}`;
-        }
-        
-        // Démarrer le jeu
-        initGame();
-    </script>
-</body>
-</html>
