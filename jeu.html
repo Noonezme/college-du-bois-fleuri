@@ -5,13 +5,371 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histoire de France - Jeu Chronologique</title>
     <style>
-        /* [Keep all the previous CSS styles] */
-        /* ... (all the futuristic styles from before) ... */
+        :root {
+            --neon-blue: #0ff0fc;
+            --neon-purple: #bc13fe;
+            --dark-bg: #0a0a12;
+            --darker-bg: #050508;
+            --card-bg: rgba(30, 30, 46, 0.8);
+            --glow: 0 0 10px rgba(15, 240, 252, 0.7);
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(188, 19, 254, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(15, 240, 252, 0.15) 0%, transparent 50%),
+                linear-gradient(to bottom, rgba(10, 10, 20, 0.9), rgba(5, 5, 15, 0.9));
+            overflow-x: hidden;
+        }
+
+        .header {
+            background-color: rgba(20, 20, 40, 0.9);
+            width: 100%;
+            text-align: center;
+            padding: 15px 0;
+            color: white;
+            box-shadow: 0 0 20px rgba(15, 240, 252, 0.3);
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid var(--neon-blue);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px var(--neon-blue);
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { text-shadow: 0 0 10px var(--neon-blue); }
+            to { text-shadow: 0 0 20px var(--neon-purple); }
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            height: 90vh;
+            padding: 10px;
+            position: relative;
+        }
+
+        .timeline-container {
+            width: 100%;
+            height: 55%;
+            overflow-x: auto;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .timeline {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            min-width: min-content;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            bottom: 80px;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            z-index: 1;
+            box-shadow: var(--glow);
+        }
+
+        .card-slot {
+            min-width: 180px;
+            height: 220px;
+            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .card {
+            width: 160px;
+            height: 200px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 15px rgba(15, 240, 252, 0.2);
+            display: flex;
+            flex-direction: column;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid rgba(15, 240, 252, 0.3);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            z-index: -1;
+            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(15, 240, 252, 0.4);
+        }
+
+        .card:hover::before {
+            opacity: 0.3;
+        }
+
+        .card.dragging {
+            opacity: 0.9;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 0 30px rgba(15, 240, 252, 0.6);
+            cursor: grabbing;
+            z-index: 100;
+            border: 1px solid var(--neon-blue);
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            color: var(--neon-blue);
+            font-size: 1.1em;
+            border-bottom: 1px solid rgba(15, 240, 252, 0.3);
+            padding-bottom: 5px;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 0.85em;
+            color: rgba(224, 224, 224, 0.9);
+            flex-grow: 1;
+        }
+
+        .card .date {
+            font-weight: bold;
+            color: var(--neon-purple);
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            padding: 20px;
+            background-color: rgba(20, 20, 40, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(15, 240, 252, 0.2);
+        }
+
+        .drop-zone {
+            min-width: 180px;
+            height: 220px;
+            margin: 0 10px;
+            border: 2px dashed rgba(127, 140, 141, 0.5);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(10, 10, 20, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .drop-zone.highlight {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(15, 240, 252, 0.3);
+        }
+
+        .drop-zone::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+            z-index: 1;
+        }
+
+        .message-area {
+            margin: 15px 0;
+            padding: 12px 20px;
+            background-color: rgba(30, 30, 46, 0.7);
+            border-radius: 6px;
+            min-height: 20px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(15, 240, 252, 0.2);
+        }
+
+        .success {
+            color: #0f0;
+            border-color: rgba(0, 255, 0, 0.3);
+        }
+
+        .error {
+            color: #f44;
+            border-color: rgba(255, 0, 0, 0.3);
+        }
+
+        .win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            display: none;
+        }
+
+        .win-screen h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .win-screen p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .win-screen button {
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .win-screen button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(15, 240, 252, 0.6);
+        }
+
+        .reporter-btn {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 10px 20px;
+            background: linear-gradient(45deg, rgba(15, 240, 252, 0.2), rgba(188, 19, 254, 0.2));
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .reporter-btn:hover {
+            background: linear-gradient(45deg, rgba(15, 240, 252, 0.3), rgba(188, 19, 254, 0.3));
+            color: white;
+            border-color: var(--neon-purple);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.4rem;
+                padding: 0 40px 0 20px;
+            }
+            
+            .card-slot, .drop-zone {
+                min-width: 140px;
+                height: 180px;
+            }
+            
+            .card {
+                width: 130px;
+                height: 160px;
+                font-size: 0.8em;
+                padding: 10px;
+            }
+            
+            .reporter-btn {
+                right: 15px;
+                padding: 8px 15px;
+                font-size: 0.8em;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- [Keep all the HTML structure] -->
-    <!-- ... (particles, header, game container, etc.) ... -->
+    <div class="header">
+        <h1>Histoire de France - Jeu Chronologique</h1>
+        <button class="reporter-btn" onclick="window.location.href='support.html'">Support</button>
+    </div>
+
+    <div class="game-container">
+        <div class="message-area" id="message-area">
+            Glissez vos cartes sur la timeline dans l'ordre chronologique
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline" id="timeline">
+                <!-- Timeline cards will be placed here -->
+            </div>
+        </div>
+
+        <div class="player-hand" id="player-hand">
+            <!-- Player cards will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="win-screen" id="win-screen">
+        <h2>Félicitations !</h2>
+        <p>Vous avez correctement placé toutes les cartes dans l'ordre chronologique !</p>
+        <button id="play-again">Rejouer</button>
+    </div>
 
     <script>
         // Game data with properly ordered historical events (oldest to newest)
@@ -209,10 +567,106 @@
             showMessage("Glissez vos cartes sur la timeline dans l'ordre chronologique");
         }
 
-        // [Keep all the previous helper functions]
-        // updatePlayerHand(), updateTimeline(), createCardElement(), etc.
+        // Update player hand display
+        function updatePlayerHand() {
+            playerHand.innerHTML = '';
+            playerCards.forEach((card, index) => {
+                const cardElement = createCardElement(card, index, true);
+                playerHand.appendChild(cardElement);
+            });
+        }
 
-        // Handle card drop on timeline - UPDATED with better validation
+        // Update timeline display
+        function updateTimeline() {
+            timeline.innerHTML = '';
+            
+            // Sort timeline cards by placement value
+            timelineCards.sort((a, b) => a.placementValue - b.placementValue);
+            
+            // Create drop zones and cards
+            timelineCards.forEach((card, index) => {
+                // Add drop zone before this card (except for first card)
+                if (index === 0) {
+                    const dropZone = createDropZone(index - 1);
+                    timeline.appendChild(dropZone);
+                }
+                
+                // Add the card
+                const cardSlot = document.createElement('div');
+                cardSlot.className = 'card-slot';
+                const cardElement = createCardElement(card);
+                cardSlot.appendChild(cardElement);
+                timeline.appendChild(cardSlot);
+                
+                // Add drop zone after this card
+                const dropZone = createDropZone(index);
+                timeline.appendChild(dropZone);
+            });
+        }
+
+        // Create a card element
+        function createCardElement(cardData, index = null, draggable = false) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // Only show date if specified or if it's on the timeline
+            const dateDisplay = cardData.showDate ? cardData.date : '????';
+            
+            card.innerHTML = `
+                <h3>${cardData.title}</h3>
+                <p>${cardData.description}</p>
+                <div class="date">${dateDisplay}</div>
+            `;
+            
+            if (draggable) {
+                card.draggable = true;
+                card.dataset.index = index;
+                
+                card.addEventListener('dragstart', (e) => {
+                    draggedCard = cardData;
+                    draggedCardIndex = index;
+                    card.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', index);
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+            }
+            
+            return card;
+        }
+
+        // Create a drop zone element
+        function createDropZone(positionIndex) {
+            const dropZone = document.createElement('div');
+            dropZone.className = 'drop-zone';
+            dropZone.dataset.position = positionIndex;
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                dropZone.classList.add('highlight');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('highlight');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('highlight');
+                
+                if (draggedCard !== null) {
+                    handleCardDrop(positionIndex);
+                }
+            });
+            
+            return dropZone;
+        }
+
+        // Handle card drop on timeline
         function handleCardDrop(positionIndex) {
             // Determine the correct position based on placementValue
             let correctPosition = false;
@@ -282,9 +736,8 @@
             updateTimeline();
         }
 
-        // New function to check win condition
+        // Check win condition
         function checkWinCondition() {
-            // Check if all cards are placed and in correct order
             const remainingEvents = events.filter(event => 
                 !playerCards.some(pc => pc.title === event.title) &&
                 !timelineCards.some(tc => tc.title === event.title)
@@ -304,8 +757,20 @@
             }
         }
 
-        // [Keep all other functions the same]
-        // showMessage(), winGame(), etc.
+        // Show win screen
+        function winGame() {
+            gameWon = true;
+            winScreen.style.display = 'flex';
+        }
+
+        // Show a message in the message area
+        function showMessage(message, type = '') {
+            messageArea.textContent = message;
+            messageArea.className = 'message-area';
+            if (type) {
+                messageArea.classList.add(type);
+            }
+        }
 
         // Event listeners
         playAgainButton.addEventListener('click', initGame);
