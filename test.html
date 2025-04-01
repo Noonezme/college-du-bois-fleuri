@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histoire de France - Jeu Chronologique</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(ellipse at center, #050510 0%, #0a0a1a 100%);
+            color: #e0f0ff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: rgba(0, 249, 255, 0.5);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 249, 255, 0.2);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00f9ff, #ff00f7);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px rgba(0, 249, 255, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .player-hand, .timeline {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(20, 25, 50, 0.7);
+            border-radius: 12px;
+            min-height: 200px;
+            align-items: center;
+            position: relative;
+            border: 1px solid rgba(0, 249, 255, 0.2);
+            box-shadow: 0 0 30px rgba(0, 249, 255, 0.1);
+        }
+
+        .timeline {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            width: 180px;
+            height: 180px;
+            background: rgba(30, 35, 60, 0.8);
+            border-radius: 10px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: grab;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 249, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 249, 255, 0.3);
+            border-color: #00f9ff;
+        }
+
+        .card.dragging {
+            opacity: 0.6;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #00f9ff;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 65%, rgba(0, 249, 255, 0.1) 100%);
+            z-index: 0;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            color: #00f9ff;
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            line-height: 1.4;
+        }
+
+        .card-date {
+            font-size: 0.9rem;
+            color: #ff00f7;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .drop-indicator {
+            width: 180px;
+            height: 180px;
+            border: 2px dashed rgba(0, 249, 255, 0.5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(0, 249, 255, 0.7);
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .drop-indicator:hover {
+            background: rgba(0, 249, 255, 0.1);
+            border-color: rgba(0, 249, 255, 0.9);
+        }
+
+        .message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.2rem 2.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 170, 0.2);
+            color: #00ffaa;
+            border: 1px solid #00ffaa;
+            box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+        }
+
+        .message.error {
+            background: rgba(255, 0, 102, 0.2);
+            color: #ff0066;
+            border: 1px solid #ff0066;
+            box-shadow: 0 0 20px rgba(255, 0, 102, 0.3);
+        }
+
+        .message.info {
+            background: rgba(0, 200, 255, 0.2);
+            color: #00c8ff;
+            border: 1px solid #00c8ff;
+            box-shadow: 0 0 20px rgba(0, 200, 255, 0.3);
+        }
+
+        .win-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .win-screen.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .win-content {
+            background: linear-gradient(135deg, #0a0a1a, #050510);
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 600px;
+            border: 1px solid rgba(0, 249, 255, 0.3);
+            box-shadow: 0 0 50px rgba(0, 249, 255, 0.3);
+        }
+
+        .win-content h2 {
+            font-size: 2.5rem;
+            margin-top: 0;
+            color: #00f9ff;
+            text-shadow: 0 0 15px rgba(0, 249, 255, 0.5);
+        }
+
+        .win-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            background: linear-gradient(90deg, #00f9ff, #ff00f7);
+            color: #050510;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 249, 255, 0.4);
+        }
+
+        .support-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 0.8rem 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(0, 249, 255, 0.3);
+        }
+
+        .support-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(0, 249, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .player-hand, .timeline {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .card {
+                width: 160px;
+                height: 160px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(100px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <header>
+        <h1>Histoire de France - Jeu Chronologique</h1>
+    </header>
+    
+    <div class="game-container">
+        <div class="player-hand" id="playerHand"></div>
+        
+        <div class="timeline" id="timeline">
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <div class="win-screen" id="winScreen">
+        <div class="win-content">
+            <h2>Félicitations !</h2>
+            <p>Vous avez correctement ordonné tous les événements historiques !</p>
+            <button class="btn" id="restartBtn">Rejouer</button>
+        </div>
+    </div>
+    
+    <button class="support-btn" id="supportBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+        </svg>
+        Support
+    </button>
+
+    <script>
+        const events = [
+            {
+                title: "Assassinat François-Ferdinand",
+                description: "Événement déclencheur de la Première Guerre mondiale.",
+                date: "28 juin 1914",
+                year: 1914,
+                value: 1
+            },
+            {
+                title: "Bataille de Verdun",
+                description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
+                date: "21 février - 18 décembre 1916",
+                year: 1916,
+                value: 2
+            },
+            {
+                title: "Armistice 1918",
+                description: "Fin des combats de la Première Guerre mondiale.",
+                date: "11 novembre 1918",
+                year: 1918,
+                value: 3
+            },
+            {
+                title: "Traité de Versailles",
+                description: "Traité de paix mettant fin officiellement à la guerre.",
+                date: "28 juin 1919",
+                year: 1919,
+                value: 4
+            },
+            {
+                title: "Hitler chancelier",
+                description: "Adolf Hitler devient chancelier d'Allemagne.",
+                date: "30 janvier 1933",
+                year: 1933,
+                value: 5
+            },
+            {
+                title: "Anschluss",
+                description: "Annexion de l'Autriche par l'Allemagne nazie.",
+                date: "12 mars 1938",
+                year: 1938,
+                value: 6
+            },
+            {
+                title: "Pacte germano-soviétique",
+                description: "Accord de non-agression entre Hitler et Staline.",
+                date: "23 août 1939",
+                year: 1939,
+                value: 7
+            },
+            {
+                title: "Invasion de la Pologne",
+                description: "Début de la Seconde Guerre mondiale.",
+                date: "1er septembre 1939",
+                year: 1939,
+                value: 8
+            },
+            {
+                title: "Discours de Pétain",
+                description: "Pétain annonce la demande d'armistice à la radio.",
+                date: "17 juin 1940",
+                year: 1940,
+                value: 9
+            },
+            {
+                title: "Appel du 18 Juin",
+                description: "De Gaulle appelle à continuer le combat depuis Londres.",
+                date: "18 juin 1940",
+                year: 1940,
+                value: 10
+            },
+            {
+                title: "Armistice 1940",
+                description: "Signature de l'armistice avec l'Allemagne nazie.",
+                date: "22 juin 1940",
+                year: 1940,
+                value: 11
+            },
+            {
+                title: "Débarquement Normandie",
+                description: "Opération Overlord pour libérer la France.",
+                date: "6 juin 1944",
+                year: 1944,
+                value: 12
+            },
+            {
+                title: "Libération de Paris",
+                description: "Fin de l'occupation allemande de la capitale.",
+                date: "25 août 1944",
+                year: 1944,
+                value: 13
+            },
+            {
+                title: "Capitulation allemande",
+                description: "Fin de la Seconde Guerre mondiale en Europe.",
+                date: "8 mai 1945",
+                year: 1945,
+                value: 14
+            },
+            {
+                title: "Création de l'ONU",
+                description: "Fondation des Nations unies.",
+                date: "26 juin 1945",
+                year: 1945,
+                value: 15
+            },
+            {
+                title: "Plan Marshall",
+                description: "Aide américaine pour la reconstruction.",
+                date: "5 juin 1947",
+                year: 1947,
+                value: 16
+            },
+            {
+                title: "Création de l'OTAN",
+                description: "Alliance militaire occidentale.",
+                date: "4 avril 1949",
+                year: 1949,
+                value: 17
+            },
+            {
+                title: "Traité de Rome",
+                description: "Fondation de la CEE (future UE).",
+                date: "25 mars 1957",
+                year: 1957,
+                value: 18
+            },
+            {
+                title: "Mai 68",
+                description: "Mouvement de protestation en France.",
+                date: "Mai-juin 1968",
+                year: 1968,
+                value: 19
+            },
+            {
+                title: "Chute du mur de Berlin",
+                description: "Événement marquant la fin de la Guerre froide.",
+                date: "9 novembre 1989",
+                year: 1989,
+                value: 20
+            },
+            {
+                title: "Traité de Maastricht",
+                description: "Fondation de l'Union européenne.",
+                date: "7 février 1992",
+                year: 1992,
+                value: 21
+            }
+        ];
+
+        let playerCards = [];
+        let timelineCards = [];
+        let gameWon = false;
+        let draggedCard = null;
+        let draggedCardIndex = null;
+
+        const playerHand = document.getElementById('playerHand');
+        const timeline = document.getElementById('timeline');
+        const message = document.getElementById('message');
+        const winScreen = document.getElementById('winScreen');
+        const restartBtn = document.getElementById('restartBtn');
+        const supportBtn = document.getElementById('supportBtn');
+
+        function initGame() {
+            playerCards = [];
+            timelineCards = [];
+            gameWon = false;
+            
+            playerHand.innerHTML = '';
+            timeline.innerHTML = '';
+            winScreen.classList.remove('show');
+            
+            const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
+            
+            playerCards = shuffledEvents.slice(0, 3).map(card => {
+                return {...card, showDate: false};
+            });
+            
+            const firstTimelineCard = {...shuffledEvents[3], showDate: true};
+            timelineCards.push(firstTimelineCard);
+            
+            updatePlayerHand();
+            updateTimeline();
+            
+            showMessage("Glissez vos cartes sur la timeline dans l'ordre chronologique", 'info');
+            createParticles();
+        }
+
+        function updatePlayerHand() {
+            playerHand.innerHTML = '';
+            
+            playerCards.forEach((card, index) => {
+                const cardElement = createCardElement(card, index);
+                playerHand.appendChild(cardElement);
+            });
+        }
+
+        function updateTimeline() {
+            timeline.innerHTML = '';
+            
+            timelineCards.sort((a, b) => a.value - b.value);
+            
+            const firstDropIndicator = document.createElement('div');
+            firstDropIndicator.className = 'drop-indicator';
+            firstDropIndicator.textContent = '+';
+            firstDropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+            firstDropIndicator.addEventListener('drop', () => handleCardDrop(-1));
+            timeline.appendChild(firstDropIndicator);
+            
+            timelineCards.forEach((card, index) => {
+                const cardElement = createCardElement(card);
+                timeline.appendChild(cardElement);
+                
+                if (index < timelineCards.length - 1) {
+                    const betweenDropIndicator = document.createElement('div');
+                    betweenDropIndicator.className = 'drop-indicator';
+                    betweenDropIndicator.textContent = '+';
+                    betweenDropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+                    betweenDropIndicator.addEventListener('drop', () => handleCardDrop(index));
+                    timeline.appendChild(betweenDropIndicator);
+                }
+            });
+            
+            const lastDropIndicator = document.createElement('div');
+            lastDropIndicator.className = 'drop-indicator';
+            lastDropIndicator.textContent = '+';
+            lastDropIndicator.addEventListener('dragover', (e) => e.preventDefault());
+            lastDropIndicator.addEventListener('drop', () => handleCardDrop(timelineCards.length - 1));
+            timeline.appendChild(lastDropIndicator);
+        }
+
+        function createCardElement(card, index = null) {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.draggable = true;
+            
+            if (index !== null) {
+                cardElement.dataset.index = index;
+            }
+            
+            const titleElement = document.createElement('div');
+            titleElement.className = 'card-title';
+            titleElement.textContent = card.title;
+            
+            const descElement = document.createElement('div');
+            descElement.className = 'card-description';
+            descElement.textContent = card.description;
+            
+            const dateElement = document.createElement('div');
+            dateElement.className = 'card-date';
+            dateElement.textContent = card.showDate ? card.date : 'Date cachée';
+            
+            cardElement.appendChild(titleElement);
+            cardElement.appendChild(descElement);
+            cardElement.appendChild(dateElement);
+            
+            cardElement.addEventListener('dragstart', (e) => {
+                if (index !== null) {
+                    draggedCard = card;
+                    draggedCardIndex = index;
+                    cardElement.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', card.title);
+                }
+            });
+            
+            cardElement.addEventListener('dragend', () => {
+                cardElement.classList.remove('dragging');
+            });
+            
+            return cardElement;
+        }
+
+        function handleCardDrop(positionIndex) {
+            if (draggedCard === null) return;
+            
+            const currentValues = timelineCards.map(card => card.value);
+            const currentMin = Math.min(...currentValues);
+            const currentMax = Math.max(...currentValues);
+            
+            let validPlacement = false;
+            
+            if (positionIndex === -1) {
+                validPlacement = (draggedCard.value < currentMin);
+            } 
+            else if (positionIndex === timelineCards.length - 1) {
+                validPlacement = (draggedCard.value > currentMax);
+            }
+            else {
+                const prevCard = timelineCards[positionIndex];
+                const nextCard = timelineCards[positionIndex + 1];
+                validPlacement = (draggedCard.value > prevCard.value && draggedCard.value < nextCard.value);
+            }
+            
+            if (validPlacement) {
+                const newCard = {
+                    ...draggedCard, 
+                    showDate: true
+                };
+                
+                timelineCards.push(newCard);
+                
+                playerCards.splice(draggedCardIndex, 1);
+                
+                const remainingEvents = events.filter(event => 
+                    !playerCards.some(pc => pc.title === event.title) &&
+                    !timelineCards.some(tc => tc.title === event.title)
+                );
+                
+                if (remainingEvents.length > 0 && playerCards.length < 3) {
+                    const newPlayerCard = {...remainingEvents[0], showDate: false};
+                    playerCards.push(newPlayerCard);
+                }
+                
+                showMessage(`Correct ! ${newCard.title} (${newCard.date}) est bien placé.`, 'success');
+                
+                checkWinCondition();
+            } else {
+                showMessage(`Incorrect ! ${draggedCard.title} ne peut être placé ici.`, 'error');
+            }
+            
+            draggedCard = null;
+            draggedCardIndex = null;
+            
+            updatePlayerHand();
+            updateTimeline();
+        }
+
+        function checkWinCondition() {
+            const remainingEvents = events.filter(event => 
+                !playerCards.some(pc => pc.title === event.title) &&
+                !timelineCards.some(tc => tc.title === event.title)
+            );
+            
+            if (playerCards.length === 0 && remainingEvents.length === 0) {
+                const sortedTimeline = [...timelineCards].sort((a, b) => a.value - b.value);
+                const isCorrectOrder = timelineCards.every((card, index) => 
+                    card.value === sortedTimeline[index].value);
+                
+                if (isCorrectOrder) {
+                    setTimeout(winGame, 500);
+                } else {
+                    showMessage("Toutes les cartes sont placées mais l'ordre n'est pas correct !", 'error');
+                }
+            }
+        }
+
+        function winGame() {
+            gameWon = true;
+            winScreen.classList.add('show');
+        }
+
+        function showMessage(text, type = 'info') {
+            message.textContent = text;
+            message.className = 'message ' + type;
+            message.classList.add('show');
+            
+            setTimeout(() => {
+                message.classList.remove('show');
+            }, 3000);
+        }
+
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            particlesContainer.innerHTML = '';
+            
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.width = `${Math.random() * 3 + 1}px`;
+                particle.style.height = particle.style.width;
+                particle.style.animationDuration = `${Math.random() * 15 + 10}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        restartBtn.addEventListener('click', initGame);
+        supportBtn.addEventListener('click', () => {
+            window.location.href = 'support.html';
+        });
+
+        initGame();
+    </script>
+</body>
+</html>
