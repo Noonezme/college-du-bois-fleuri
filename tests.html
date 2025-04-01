@@ -1,464 +1,137 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Histoire de France - Jeu Chronologique</title>
+    <title>Start Page</title>
     <style>
         body {
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0,100,255,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(180,0,220,0.1) 0%, transparent 60%),
+                linear-gradient(to bottom, #000010, #050525);
+            color: #e0f0ff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #e6e6e6;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-        
-        .game-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .timeline {
             display: flex;
-            gap: 10px;
-            padding: 1rem;
-            overflow-x: auto;
-            min-height: 200px;
-            align-items: center;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-        }
-        
-        .card {
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            min-width: 180px;
-            cursor: grab;
-            border: 1px solid rgba(0,219,222,0.3);
-            transition: all 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .drop-zone {
-            min-width: 50px;
-            height: 100px;
-            border: 2px dashed rgba(0,219,222,0.5);
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .drop-zone.active {
-            background: rgba(0,219,222,0.1);
-        }
-        
-        .player-hand {
-            display: flex;
-            gap: 1rem;
             justify-content: center;
-            flex-wrap: wrap;
-            margin: 2rem 0;
-        }
-        
-        .message {
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 4px;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            overflow: hidden;
             text-align: center;
+            position: relative;
         }
-        
-        .success {
-            background: rgba(0,200,83,0.2);
-            color: #00c853;
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00f9ff, #a0f, #00f9ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(0,249,255,0.4);
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            animation: hueShift 8s infinite;
         }
-        
-        .error {
-            background: rgba(255,23,68,0.2);
-            color: #ff1744;
+        @keyframes hueShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(30deg); }
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 2;
+        }
+        .start-button {
+            background: rgba(20,25,60,0.8);
+            color: #00f9ff;
+            border: 1px solid rgba(0,249,255,0.3);
+            padding: 18px 36px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            backdrop-filter: blur(5px);
+            box-shadow: 
+                0 5px 20px rgba(0,0,0,0.3),
+                inset 0 0 15px rgba(0,249,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,249,255,0.05), rgba(200,0,255,0.03));
+            z-index: -1;
+        }
+        .start-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 10px 30px rgba(0,249,255,0.3),
+                inset 0 0 20px rgba(0,249,255,0.2);
+            border-color: rgba(0,249,255,0.6);
+        }
+        .start-button:active {
+            transform: translateY(0);
+        }
+        .bottom-left {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 14px;
+            color: #00f9ff;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0,249,255,0.5);
+        }
+        .cyber-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M50 0 L100 25 L100 75 L50 100 L0 75 L0 25 Z" fill="none" stroke="rgba(0,150,255,0.05)" stroke-width="0.5"/></svg>');
+            background-size: 100px 100px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>');
+            z-index: -1;
+            pointer-events: none;
+            animation: glitch 5s infinite alternate;
+        }
+        @keyframes glitch {
+            0%, 100% { opacity: 0.03; transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-3px, 1px); }
+            80% { transform: translate(1px, -3px); }
         }
     </style>
 </head>
 <body>
-    <button class="simple-round-button" id="supportButton" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/support.html'">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-        <line x1="12" y1="17" x2="12" y2="17"></line>
-    </svg>
-</button>
-
-<style>
-.simple-round-button {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #e0f0ff;
-    cursor: pointer;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.simple-round-button:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.simple-round-button:active {
-    transform: translateY(0);
-}
-
-.simple-round-button svg {
-    width: 24px;
-    height: 24px;
-    stroke: #e0f0ff;
-}
-</style>
-
-<script>
-document.getElementById('supportButton').addEventListener('click', function() {
-    window.location.href = 'https://college-du-bois-fleuri-pywx.vercel.app/support.html';
-});
-</script>
-    <div class="game-container">
-        <h1>Histoire de France - Jeu Chronologique</h1>
-        
-        <div class="timeline" id="timeline"></div>
-        
-        <div class="player-hand" id="playerHand"></div>
-        
-        <div id="message" class="message"></div>
+    <div class="cyber-grid"></div>
+    <div class="glitch-overlay"></div>
+    
+    <h1>Bienvenue dans le jeu d'entrainement Histoire!</h1>
+    <div class="button-container">
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/jeu.html'">Commencer</button>
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/test.html'">Mode test</button>
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/future.html'">Mode Future</button>
     </div>
-
-    <script>
-        // Vos événements historiques avec les dates exactes du script
-        const events = [
-            {
-                title: "Assassinat François-Ferdinand",
-                description: "Événement déclencheur de la Première Guerre mondiale.",
-                date: "28 juin 1914",
-                year: 1914,
-                month: 6,
-                day: 28,
-                value: 1
-            },
-            {
-                title: "Bataille de Verdun",
-                description: "L'une des batailles les plus meurtrières de la Première Guerre mondiale.",
-                date: "21 février - 18 décembre 1916",
-                year: 1916,
-                month: 2,
-                day: 21,
-                value: 2
-            },
-            {
-                title: "Armistice 1918",
-                description: "Fin des combats de la Première Guerre mondiale.",
-                date: "11 novembre 1918",
-                year: 1918,
-                month: 11,
-                day: 11,
-                value: 3
-            },
-            {
-                title: "Traité de Versailles",
-                description: "Traité de paix mettant fin officiellement à la guerre.",
-                date: "28 juin 1919",
-                year: 1919,
-                month: 6,
-                day: 28,
-                value: 4
-            },
-            {
-                title: "Hitler chancelier",
-                description: "Adolf Hitler devient chancelier d'Allemagne.",
-                date: "30 janvier 1933",
-                year: 1933,
-                month: 1,
-                day: 30,
-                value: 5
-            },
-            {
-                title: "Anschluss",
-                description: "Annexion de l'Autriche par l'Allemagne nazie.",
-                date: "12 mars 1938",
-                year: 1938,
-                month: 3,
-                day: 12,
-                value: 6
-            },
-            {
-                title: "Pacte germano-soviétique",
-                description: "Accord de non-agression entre Hitler et Staline.",
-                date: "23 août 1939",
-                year: 1939,
-                month: 8,
-                day: 23,
-                value: 7
-            },
-            {
-                title: "Invasion de la Pologne",
-                description: "Début de la Seconde Guerre mondiale.",
-                date: "1er septembre 1939",
-                year: 1939,
-                month: 9,
-                day: 1,
-                value: 8
-            },
-            {
-                title: "Discours de Pétain",
-                description: "Pétain annonce la demande d'armistice à la radio.",
-                date: "17 juin 1940",
-                year: 1940,
-                month: 6,
-                day: 17,
-                value: 9
-            },
-            {
-                title: "Appel du 18 Juin",
-                description: "De Gaulle appelle à continuer le combat depuis Londres.",
-                date: "18 juin 1940",
-                year: 1940,
-                month: 6,
-                day: 18,
-                value: 10
-            },
-            {
-                title: "Armistice 1940",
-                description: "Signature de l'armistice avec l'Allemagne nazie.",
-                date: "22 juin 1940",
-                year: 1940,
-                month: 6,
-                day: 22,
-                value: 11
-            },
-            {
-                title: "Débarquement Normandie",
-                description: "Opération Overlord pour libérer la France.",
-                date: "6 juin 1944",
-                year: 1944,
-                month: 6,
-                day: 6,
-                value: 12
-            },
-            {
-                title: "Libération de Paris",
-                description: "Fin de l'occupation allemande de la capitale.",
-                date: "25 août 1944",
-                year: 1944,
-                month: 8,
-                day: 25,
-                value: 13
-            },
-            {
-                title: "Capitulation allemande",
-                description: "Fin de la Seconde Guerre mondiale en Europe.",
-                date: "8 mai 1945",
-                year: 1945,
-                month: 5,
-                day: 8,
-                value: 14
-            },
-            {
-                title: "Création de l'ONU",
-                description: "Fondation des Nations unies.",
-                date: "26 juin 1945",
-                year: 1945,
-                month: 6,
-                day: 26,
-                value: 15
-            },
-            {
-                title: "Plan Marshall",
-                description: "Aide américaine pour la reconstruction.",
-                date: "5 juin 1947",
-                year: 1947,
-                month: 6,
-                day: 5,
-                value: 16
-            },
-            {
-                title: "Création de l'OTAN",
-                description: "Alliance militaire occidentale.",
-                date: "4 avril 1949",
-                year: 1949,
-                month: 4,
-                day: 4,
-                value: 17
-            },
-            {
-                title: "Traité de Rome",
-                description: "Fondation de la CEE (future UE).",
-                date: "25 mars 1957",
-                year: 1957,
-                month: 3,
-                day: 25,
-                value: 18
-            },
-            {
-                title: "Mai 68",
-                description: "Mouvement de protestation en France.",
-                date: "Mai-juin 1968",
-                year: 1968,
-                month: 5,
-                day: 1,
-                value: 19
-            },
-            {
-                title: "Chute du mur de Berlin",
-                description: "Événement marquant la fin de la Guerre froide.",
-                date: "9 novembre 1989",
-                year: 1989,
-                month: 11,
-                day: 9,
-                value: 20
-            },
-            {
-                title: "Traité de Maastricht",
-                description: "Fondation de l'Union européenne.",
-                date: "7 février 1992",
-                year: 1992,
-                month: 2,
-                day: 7,
-                value: 21
-            }
-        ];
-
-        // Initialisation du jeu
-        function initGame() {
-            const shuffled = [...events].sort(() => Math.random() - 0.5);
-            playerCards = shuffled.slice(0, 3);
-            timelineCards = [shuffled[3]];
-            
-            updateDisplay();
-        }
-        
-        function updateDisplay() {
-            timeline.innerHTML = '';
-            playerHand.innerHTML = '';
-            
-            // Trier par valeur (1=le plus ancien)
-            timelineCards.sort((a, b) => a.value - b.value);
-            
-            // Ajouter des zones de dépôt avant chaque carte
-            timelineCards.forEach((card, index) => {
-                const dropZone = createDropZone(index - 1);
-                timeline.appendChild(dropZone);
-                
-                const cardElement = createCardElement(card);
-                timeline.appendChild(cardElement);
-            });
-            
-            // Ajouter une zone de dépôt finale
-            const finalDropZone = createDropZone(timelineCards.length - 1);
-            timeline.appendChild(finalDropZone);
-            
-            // Afficher la main du joueur
-            playerCards.forEach((card, index) => {
-                const cardElement = createCardElement(card, index, true);
-                playerHand.appendChild(cardElement);
-            });
-        }
-        
-        function createCardElement(card, index = null, isPlayerCard = false) {
-            const element = document.createElement('div');
-            element.className = 'card';
-            element.innerHTML = `
-                <h3>${card.title}</h3>
-                <p>${card.description}</p>
-                <small>${isPlayerCard ? 'Date cachée' : card.date}</small>
-            `;
-            
-            if (isPlayerCard) {
-                element.draggable = true;
-                element.addEventListener('dragstart', () => {
-                    draggedCard = card;
-                });
-            }
-            
-            return element;
-        }
-        
-        function createDropZone(positionIndex) {
-            const dropZone = document.createElement('div');
-            dropZone.className = 'drop-zone';
-            dropZone.dataset.position = positionIndex;
-            
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('active');
-            });
-            
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('active');
-            });
-            
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('active');
-                handleCardDrop(parseInt(dropZone.dataset.position));
-            });
-            
-            return dropZone;
-        }
-        
-        function handleCardDrop(positionIndex) {
-            if (!draggedCard) return;
-            
-            // Vérifier le placement
-            const prevCard = timelineCards[positionIndex];
-            const nextCard = timelineCards[positionIndex + 1];
-            
-            const isValid = (
-                (!prevCard || draggedCard.value > prevCard.value) && 
-                (!nextCard || draggedCard.value < nextCard.value)
-            );
-            
-            if (isValid) {
-                timelineCards.push(draggedCard);
-                playerCards = playerCards.filter(c => c.title !== draggedCard.title);
-                
-                // Piocher une nouvelle carte si disponible
-                const remaining = events.filter(
-                    e => ![...playerCards, ...timelineCards].some(c => c.title === e.title)
-                );
-                
-                if (remaining.length > 0) {
-                    playerCards.push(remaining[0]);
-                }
-                
-                showMessage("Correct !", "success");
-            } else {
-                showMessage("Incorrect - l'ordre chronologique est faux", "error");
-            }
-            
-            updateDisplay();
-        }
-        
-        function showMessage(text, type) {
-            const msg = document.getElementById('message');
-            msg.textContent = text;
-            msg.className = `message ${type}`;
-        }
-        
-        // Démarrer le jeu
-        initGame();
-    </script>
+    <div class="bottom-left">Zaland.SADIQ</div>
 </body>
 </html>
