@@ -6,10 +6,7 @@
     <title>Start Page</title>
     <style>
         body {
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(0,100,255,0.1) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(180,0,220,0.1) 0%, transparent 60%),
-                linear-gradient(to bottom, #000010, #050525);
+            background: #000010;
             color: #e0f0ff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -21,7 +18,9 @@
             overflow: hidden;
             text-align: center;
             position: relative;
+            cursor: default;
         }
+        
         h1 {
             font-size: 2.5rem;
             background: linear-gradient(90deg, #00f9ff, #a0f, #00f9ff);
@@ -32,17 +31,21 @@
             letter-spacing: 2px;
             margin-bottom: 40px;
             animation: hueShift 8s infinite;
+            z-index: 10;
         }
+        
         @keyframes hueShift {
             0%, 100% { filter: hue-rotate(0deg); }
             50% { filter: hue-rotate(30deg); }
         }
+        
         .button-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            z-index: 2;
+            z-index: 10;
         }
+        
         .start-button {
             background: rgba(20,25,60,0.8);
             color: #00f9ff;
@@ -54,12 +57,12 @@
             transition: all 0.3s ease;
             font-weight: bold;
             backdrop-filter: blur(5px);
-            box-shadow: 
-                0 5px 20px rgba(0,0,0,0.3),
-                inset 0 0 15px rgba(0,249,255,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3), inset 0 0 15px rgba(0,249,255,0.1);
             position: relative;
             overflow: hidden;
+            z-index: 10;
         }
+        
         .start-button::before {
             content: '';
             position: absolute;
@@ -70,16 +73,13 @@
             background: linear-gradient(135deg, rgba(0,249,255,0.05), rgba(200,0,255,0.03));
             z-index: -1;
         }
+        
         .start-button:hover {
             transform: translateY(-5px);
-            box-shadow: 
-                0 10px 30px rgba(0,249,255,0.3),
-                inset 0 0 20px rgba(0,249,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,249,255,0.3), inset 0 0 20px rgba(0,249,255,0.2);
             border-color: rgba(0,249,255,0.6);
         }
-        .start-button:active {
-            transform: translateY(0);
-        }
+        
         .bottom-left {
             position: absolute;
             bottom: 20px;
@@ -88,43 +88,73 @@
             color: #00f9ff;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0,249,255,0.5);
+            z-index: 10;
         }
-        .cyber-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M50 0 L100 25 L100 75 L50 100 L0 75 L0 25 Z" fill="none" stroke="rgba(0,150,255,0.05)" stroke-width="0.5"/></svg>');
-            background-size: 100px 100px;
+        
+        .energy-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.8;
             z-index: -1;
-            opacity: 0.3;
         }
-        .glitch-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>');
-            z-index: -1;
+        
+        #orb1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0,100,255,0.8), transparent 70%);
+            animation: float 15s infinite linear;
+        }
+        
+        #orb2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(180,0,220,0.6), transparent 70%);
+            animation: float 20s infinite linear reverse;
+        }
+        
+        #orb3 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(0,200,200,0.5), transparent 70%);
+            animation: float 25s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, 50px) rotate(90deg); }
+            50% { transform: translate(100px, 0) rotate(180deg); }
+            75% { transform: translate(50px, -50px) rotate(270deg); }
+            100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(0,249,255,0.7);
+            border-radius: 50%;
             pointer-events: none;
-            animation: glitch 5s infinite alternate;
+            z-index: -1;
         }
-        @keyframes glitch {
-            0%, 100% { opacity: 0.03; transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(2px, -2px); }
-            60% { transform: translate(-3px, 1px); }
-            80% { transform: translate(1px, -3px); }
+        
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,150,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,150,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
         }
     </style>
 </head>
 <body>
-    <div class="cyber-grid"></div>
-    <div class="glitch-overlay"></div>
+    <div class="grid-lines"></div>
+    <div id="orb1" class="energy-orb"></div>
+    <div id="orb2" class="energy-orb"></div>
+    <div id="orb3" class="energy-orb"></div>
     
     <h1>Bienvenue dans le jeu d'entrainement Histoire!</h1>
     <div class="button-container">
@@ -133,5 +163,43 @@
         <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/future.html'">Mode Future</button>
     </div>
     <div class="bottom-left">Zaland.SADIQ</div>
+
+    <script>
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.energy-orb');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            orbs.forEach((orb, index) => {
+                const moveX = (x - 0.5) * 100 * (index + 1);
+                const moveY = (y - 0.5) * 100 * (index + 1);
+                orb.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+        });
+
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 5 + 1;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const duration = Math.random() * 15 + 10;
+                const delay = Math.random() * 5;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.animation = `float ${duration}s linear ${delay}s infinite`;
+                particle.style.boxShadow = `0 0 ${size*2}px ${size}px rgba(0,249,255,0.3)`;
+                
+                document.body.appendChild(particle);
+            }
+        }
+
+        createParticles();
+    </script>
 </body>
 </html>
