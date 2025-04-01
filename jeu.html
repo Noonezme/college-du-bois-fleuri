@@ -85,6 +85,57 @@
     </style>
 </head>
 <body>
+    <button class="simple-round-button" id="supportButton" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/support.html'">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12" y2="17"></line>
+    </svg>
+</button>
+
+<style>
+.simple-round-button {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0f0ff;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.simple-round-button:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.simple-round-button:active {
+    transform: translateY(0);
+}
+
+.simple-round-button svg {
+    width: 24px;
+    height: 24px;
+    stroke: #e0f0ff;
+}
+</style>
+
+<script>
+document.getElementById('supportButton').addEventListener('click', function() {
+    window.location.href = 'https://college-du-bois-fleuri-pywx.vercel.app/support.html';
+});
+</script>
     <div class="game-container">
         <h1>Histoire de France - Jeu Chronologique</h1>
         
@@ -96,7 +147,6 @@
     </div>
 
     <script>
-        // Vos événements historiques avec les dates exactes du script
         const events = [
             {
                 title: "Assassinat François-Ferdinand",
@@ -289,7 +339,6 @@
             }
         ];
 
-        // Initialisation du jeu
         function initGame() {
             const shuffled = [...events].sort(() => Math.random() - 0.5);
             playerCards = shuffled.slice(0, 3);
@@ -302,10 +351,8 @@
             timeline.innerHTML = '';
             playerHand.innerHTML = '';
             
-            // Trier par valeur (1=le plus ancien)
             timelineCards.sort((a, b) => a.value - b.value);
             
-            // Ajouter des zones de dépôt avant chaque carte
             timelineCards.forEach((card, index) => {
                 const dropZone = createDropZone(index - 1);
                 timeline.appendChild(dropZone);
@@ -314,11 +361,9 @@
                 timeline.appendChild(cardElement);
             });
             
-            // Ajouter une zone de dépôt finale
             const finalDropZone = createDropZone(timelineCards.length - 1);
             timeline.appendChild(finalDropZone);
             
-            // Afficher la main du joueur
             playerCards.forEach((card, index) => {
                 const cardElement = createCardElement(card, index, true);
                 playerHand.appendChild(cardElement);
@@ -370,7 +415,6 @@
         function handleCardDrop(positionIndex) {
             if (!draggedCard) return;
             
-            // Vérifier le placement
             const prevCard = timelineCards[positionIndex];
             const nextCard = timelineCards[positionIndex + 1];
             
@@ -383,7 +427,6 @@
                 timelineCards.push(draggedCard);
                 playerCards = playerCards.filter(c => c.title !== draggedCard.title);
                 
-                // Piocher une nouvelle carte si disponible
                 const remaining = events.filter(
                     e => ![...playerCards, ...timelineCards].some(c => c.title === e.title)
                 );
@@ -406,7 +449,6 @@
             msg.className = `message ${type}`;
         }
         
-        // Démarrer le jeu
         initGame();
     </script>
 </body>
