@@ -6,10 +6,7 @@
     <title>Start Page</title>
     <style>
         body {
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(0,100,255,0.1) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(180,0,220,0.1) 0%, transparent 60%),
-                linear-gradient(to bottom, #000010, #050525);
+            background: #000010;
             color: #e0f0ff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
@@ -21,7 +18,9 @@
             overflow: hidden;
             text-align: center;
             position: relative;
+            cursor: default;
         }
+        
         h1 {
             font-size: 2.5rem;
             background: linear-gradient(90deg, #00f9ff, #a0f, #00f9ff);
@@ -32,17 +31,21 @@
             letter-spacing: 2px;
             margin-bottom: 40px;
             animation: hueShift 8s infinite;
+            z-index: 10;
         }
+        
         @keyframes hueShift {
             0%, 100% { filter: hue-rotate(0deg); }
             50% { filter: hue-rotate(30deg); }
         }
+        
         .button-container {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            z-index: 2;
+            z-index: 10;
         }
+        
         .start-button {
             background: rgba(20,25,60,0.8);
             color: #00f9ff;
@@ -54,32 +57,18 @@
             transition: all 0.3s ease;
             font-weight: bold;
             backdrop-filter: blur(5px);
-            box-shadow: 
-                0 5px 20px rgba(0,0,0,0.3),
-                inset 0 0 15px rgba(0,249,255,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3), inset 0 0 15px rgba(0,249,255,0.1);
             position: relative;
             overflow: hidden;
+            z-index: 10;
         }
-        .start-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0,249,255,0.05), rgba(200,0,255,0.03));
-            z-index: -1;
-        }
+        
         .start-button:hover {
             transform: translateY(-5px);
-            box-shadow: 
-                0 10px 30px rgba(0,249,255,0.3),
-                inset 0 0 20px rgba(0,249,255,0.2);
+            box-shadow: 0 10px 30px rgba(0,249,255,0.3), inset 0 0 20px rgba(0,249,255,0.2);
             border-color: rgba(0,249,255,0.6);
         }
-        .start-button:active {
-            transform: translateY(0);
-        }
+        
         .bottom-left {
             position: absolute;
             bottom: 20px;
@@ -88,43 +77,43 @@
             color: #00f9ff;
             font-weight: bold;
             text-shadow: 0 0 10px rgba(0,249,255,0.5);
+            z-index: 10;
         }
-        .cyber-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M50 0 L100 25 L100 75 L50 100 L0 75 L0 25 Z" fill="none" stroke="rgba(0,150,255,0.05)" stroke-width="0.5"/></svg>');
-            background-size: 100px 100px;
+        
+        .bg-element {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.8;
             z-index: -1;
-            opacity: 0.3;
+            transition: transform 0.1s linear;
         }
-        .glitch-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>');
-            z-index: -1;
+        
+        .particle {
+            position: absolute;
+            background: rgba(0,249,255,0.7);
+            border-radius: 50%;
             pointer-events: none;
-            animation: glitch 5s infinite alternate;
+            z-index: -1;
+            transition: transform 0.1s linear;
         }
-        @keyframes glitch {
-            0%, 100% { opacity: 0.03; transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(2px, -2px); }
-            60% { transform: translate(-3px, 1px); }
-            80% { transform: translate(1px, -3px); }
+        
+        .grid-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,150,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,150,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -2;
         }
     </style>
 </head>
 <body>
-    <div class="cyber-grid"></div>
-    <div class="glitch-overlay"></div>
+    <div class="grid-lines"></div>
     
     <h1>Bienvenue dans le jeu d'entrainement Histoire!</h1>
     <div class="button-container">
@@ -133,5 +122,105 @@
         <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/future.html'">Mode Future</button>
     </div>
     <div class="bottom-left">Zaland.SADIQ</div>
+
+    <script>
+        // Create background elements
+        function createBackground() {
+            // Large energy orbs
+            const colors = [
+                'rgba(0,100,255,0.8)',
+                'rgba(180,0,220,0.6)',
+                'rgba(0,200,200,0.5)'
+            ];
+            const sizes = [300, 400, 200];
+            
+            colors.forEach((color, i) => {
+                const orb = document.createElement('div');
+                orb.className = 'bg-element';
+                orb.style.width = `${sizes[i]}px`;
+                orb.style.height = `${sizes[i]}px`;
+                orb.style.background = `radial-gradient(circle, ${color}, transparent 70%)`;
+                
+                // Random initial position
+                orb.style.left = `${Math.random() * 80 + 10}%`;
+                orb.style.top = `${Math.random() * 80 + 10}%`;
+                
+                document.body.appendChild(orb);
+            });
+            
+            // Particles
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 5 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.boxShadow = `0 0 ${size*2}px ${size}px rgba(0,249,255,0.3)`;
+                
+                document.body.appendChild(particle);
+            }
+        }
+        
+        // Mouse movement effect
+        let mouseX = 0;
+        let mouseY = 0;
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        
+        function handleMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Calculate normalized position (-0.5 to 0.5)
+            const normX = (mouseX / windowWidth) - 0.5;
+            const normY = (mouseY / windowHeight) - 0.5;
+            
+            // Move background elements with parallax effect
+            const bgElements = document.querySelectorAll('.bg-element, .particle');
+            bgElements.forEach((el, i) => {
+                // Different speed based on element type and index
+                let speed = el.classList.contains('bg-element') ? 0.05 : 0.1;
+                speed *= (i % 3) + 1; // Vary speed slightly
+                
+                const moveX = normX * 100 * speed;
+                const moveY = normY * 100 * speed;
+                
+                el.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+            
+            // Subtle grid movement
+            const grid = document.querySelector('.grid-lines');
+            const gridMoveX = normX * 10;
+            const gridMoveY = normY * 10;
+            grid.style.backgroundPosition = `${gridMoveX}px ${gridMoveY}px`;
+        }
+        
+        // Handle window resize
+        function handleResize() {
+            windowWidth = window.innerWidth;
+            windowHeight = window.innerHeight;
+        }
+        
+        // Initialize
+        createBackground();
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('resize', handleResize);
+        
+        // Add slight continuous movement
+        function subtleFloat() {
+            const bgElements = document.querySelectorAll('.bg-element');
+            bgElements.forEach((el, i) => {
+                const time = Date.now() * 0.0005 * (i + 1);
+                const floatX = Math.sin(time) * 20;
+                const floatY = Math.cos(time * 0.7) * 20;
+                el.style.transform = `${el.style.transform || ''} translate(${floatX}px, ${floatY}px)`;
+            });
+            requestAnimationFrame(subtleFloat);
+        }
+        subtleFloat();
+    </script>
 </body>
 </html>
