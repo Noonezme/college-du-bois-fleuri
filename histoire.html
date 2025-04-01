@@ -17,7 +17,7 @@
             flex-direction: column;
             overflow: hidden;
             text-align: center;
-            position: relative; /* Allows absolute positioning inside */
+            position: relative;
         }
         h1 {
             font-size: 2.5rem;
@@ -26,6 +26,11 @@
             margin-bottom: 30px;
             color: #ff4081;
             text-shadow: 0 0 20px rgba(255, 64, 129, 0.5);
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
         .start-button {
             background: linear-gradient(45deg, #6200ea, #ff4081);
@@ -70,7 +75,11 @@
 </head>
 <body>
     <h1 class="glow">Bienvenue dans le jeu d'entrainement Histoire!</h1>
-    <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/jeu.html'">Commencer</button>
+    <div class="button-container">
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/jeu.html'">Commencer</button>
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/test.html'">Mode test</button>
+        <button class="start-button" onclick="window.location.href='https://college-du-bois-fleuri-pywx.vercel.app/future.html'">Mode Future</button>
+    </div>
     <div class="bottom-left">Zaland.SADIQ</div>
 </body>
 </html>
