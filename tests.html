@@ -63,17 +63,6 @@
             z-index: 10;
         }
         
-        .start-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(0,249,255,0.05), rgba(200,0,255,0.03));
-            z-index: -1;
-        }
-        
         .start-button:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,249,255,0.3), inset 0 0 20px rgba(0,249,255,0.2);
@@ -91,41 +80,13 @@
             z-index: 10;
         }
         
-        .energy-orb {
+        .bg-element {
             position: absolute;
             border-radius: 50%;
             filter: blur(40px);
             opacity: 0.8;
             z-index: -1;
-        }
-        
-        #orb1 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(0,100,255,0.8), transparent 70%);
-            animation: float 15s infinite linear;
-        }
-        
-        #orb2 {
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(180,0,220,0.6), transparent 70%);
-            animation: float 20s infinite linear reverse;
-        }
-        
-        #orb3 {
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(0,200,200,0.5), transparent 70%);
-            animation: float 25s infinite linear;
-        }
-        
-        @keyframes float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(50px, 50px) rotate(90deg); }
-            50% { transform: translate(100px, 0) rotate(180deg); }
-            75% { transform: translate(50px, -50px) rotate(270deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
+            transition: transform 0.1s linear;
         }
         
         .particle {
@@ -134,6 +95,7 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: -1;
+            transition: transform 0.1s linear;
         }
         
         .grid-lines {
@@ -146,15 +108,12 @@
                 linear-gradient(rgba(0,150,255,0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,150,255,0.05) 1px, transparent 1px);
             background-size: 50px 50px;
-            z-index: -1;
+            z-index: -2;
         }
     </style>
 </head>
 <body>
     <div class="grid-lines"></div>
-    <div id="orb1" class="energy-orb"></div>
-    <div id="orb2" class="energy-orb"></div>
-    <div id="orb3" class="energy-orb"></div>
     
     <h1>Bienvenue dans le jeu d'entrainement Histoire!</h1>
     <div class="button-container">
@@ -165,41 +124,103 @@
     <div class="bottom-left">Zaland.SADIQ</div>
 
     <script>
-        document.addEventListener('mousemove', (e) => {
-            const orbs = document.querySelectorAll('.energy-orb');
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
+        // Create background elements
+        function createBackground() {
+            // Large energy orbs
+            const colors = [
+                'rgba(0,100,255,0.8)',
+                'rgba(180,0,220,0.6)',
+                'rgba(0,200,200,0.5)'
+            ];
+            const sizes = [300, 400, 200];
             
-            orbs.forEach((orb, index) => {
-                const moveX = (x - 0.5) * 100 * (index + 1);
-                const moveY = (y - 0.5) * 100 * (index + 1);
-                orb.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            colors.forEach((color, i) => {
+                const orb = document.createElement('div');
+                orb.className = 'bg-element';
+                orb.style.width = `${sizes[i]}px`;
+                orb.style.height = `${sizes[i]}px`;
+                orb.style.background = `radial-gradient(circle, ${color}, transparent 70%)`;
+                
+                // Random initial position
+                orb.style.left = `${Math.random() * 80 + 10}%`;
+                orb.style.top = `${Math.random() * 80 + 10}%`;
+                
+                document.body.appendChild(orb);
             });
-        });
-
-        function createParticles() {
-            for (let i = 0; i < 50; i++) {
+            
+            // Particles
+            for (let i = 0; i < 30; i++) {
                 const particle = document.createElement('div');
-                particle.classList.add('particle');
+                particle.className = 'particle';
                 
                 const size = Math.random() * 5 + 1;
-                const posX = Math.random() * 100;
-                const posY = Math.random() * 100;
-                const duration = Math.random() * 15 + 10;
-                const delay = Math.random() * 5;
-                
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                particle.style.left = `${posX}%`;
-                particle.style.top = `${posY}%`;
-                particle.style.animation = `float ${duration}s linear ${delay}s infinite`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
                 particle.style.boxShadow = `0 0 ${size*2}px ${size}px rgba(0,249,255,0.3)`;
                 
                 document.body.appendChild(particle);
             }
         }
-
-        createParticles();
+        
+        // Mouse movement effect
+        let mouseX = 0;
+        let mouseY = 0;
+        let windowWidth = window.innerWidth;
+        let windowHeight = window.innerHeight;
+        
+        function handleMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Calculate normalized position (-0.5 to 0.5)
+            const normX = (mouseX / windowWidth) - 0.5;
+            const normY = (mouseY / windowHeight) - 0.5;
+            
+            // Move background elements with parallax effect
+            const bgElements = document.querySelectorAll('.bg-element, .particle');
+            bgElements.forEach((el, i) => {
+                // Different speed based on element type and index
+                let speed = el.classList.contains('bg-element') ? 0.05 : 0.1;
+                speed *= (i % 3) + 1; // Vary speed slightly
+                
+                const moveX = normX * 100 * speed;
+                const moveY = normY * 100 * speed;
+                
+                el.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+            
+            // Subtle grid movement
+            const grid = document.querySelector('.grid-lines');
+            const gridMoveX = normX * 10;
+            const gridMoveY = normY * 10;
+            grid.style.backgroundPosition = `${gridMoveX}px ${gridMoveY}px`;
+        }
+        
+        // Handle window resize
+        function handleResize() {
+            windowWidth = window.innerWidth;
+            windowHeight = window.innerHeight;
+        }
+        
+        // Initialize
+        createBackground();
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('resize', handleResize);
+        
+        // Add slight continuous movement
+        function subtleFloat() {
+            const bgElements = document.querySelectorAll('.bg-element');
+            bgElements.forEach((el, i) => {
+                const time = Date.now() * 0.0005 * (i + 1);
+                const floatX = Math.sin(time) * 20;
+                const floatY = Math.cos(time * 0.7) * 20;
+                el.style.transform = `${el.style.transform || ''} translate(${floatX}px, ${floatY}px)`;
+            });
+            requestAnimationFrame(subtleFloat);
+        }
+        subtleFloat();
     </script>
 </body>
 </html>
