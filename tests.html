@@ -837,28 +837,80 @@
     </script>
 
     <!-- LASER SCANNER SYSTEM -->
-    <script>
-        function triggerLaserScan() {
-            const laser = document.getElementById('laserScanner');
-            const cards = document.querySelectorAll('.card');
-            
-            laser.style.left = `${Math.random() * 80 + 10}%`;
-            laser.style.width = `${Math.random() * 20 + 5}%`;
-            laser.style.opacity = '1';
-            
-            setTimeout(() => {
-                cards.forEach(card => {
-                    if (Math.random() > 0.7) {
-                        card.classList.add('scanned');
-                        setTimeout(() => card.classList.remove('scanned'), 1500);
-                    }
-                });
-            }, 500);
-            
-            setTimeout(() => laser.style.opacity = '0', 2000);
-        }
+<script>
+    // Enhanced Laser Scanner System
+    let isScanning = false;
+    let scanDirection = 'down';
+    let laser = document.getElementById('laserScanner');
+    
+    function startLaserScan() {
+        if (isScanning) return;
+        
+        isScanning = true;
+        scanDirection = 'down';
+        laser.style.opacity = '1';
+        laser.style.top = '0';
+        laser.style.left = `${Math.random() * 80 + 10}%`;
+        laser.style.width = `${Math.random() * 20 + 5}%`;
+        
+        animateScan();
+    }
 
-        setInterval(triggerLaserScan, Math.random() * 5000 + 5000);
-    </script>
+    function animateScan() {
+        if (!isScanning) return;
+        
+        const currentPos = parseFloat(laser.style.top || '0');
+        const viewportHeight = window.innerHeight;
+        
+        if (scanDirection === 'down') {
+            const newPos = currentPos + 1;
+            laser.style.top = `${newPos}px`;
+            
+            // Scan random cards during descent
+            if (Math.random() > 0.7) {
+                scanRandomCard();
+            }
+            
+            if (newPos < viewportHeight) {
+                requestAnimationFrame(animateScan);
+            } else {
+                scanDirection = 'up';
+                requestAnimationFrame(animateScan);
+            }
+        } else {
+            const newPos = currentPos - 1;
+            laser.style.top = `${newPos}px`;
+            
+            if (newPos > 0) {
+                requestAnimationFrame(animateScan);
+            } else {
+                finishScan();
+            }
+        }
+    }
+
+    function scanRandomCard() {
+        const cards = document.querySelectorAll('.card:not(.scanned)');
+        if (cards.length > 0) {
+            const randomCard = cards[Math.floor(Math.random() * cards.length)];
+            randomCard.classList.add('scanned');
+            setTimeout(() => {
+                randomCard.classList.remove('scanned');
+            }, 1500);
+        }
+    }
+
+    function finishScan() {
+        laser.style.opacity = '0';
+        isScanning = false;
+        
+        // Schedule next scan between 30-40 seconds
+        const nextScanDelay = Math.random() * 10000 + 30000; // 30-40 seconds
+        setTimeout(startLaserScan, nextScanDelay);
+    }
+
+    // Initial scan after 5 seconds, then random intervals
+    setTimeout(startLaserScan, 5000);
+</script>
 </body>
 </html>
